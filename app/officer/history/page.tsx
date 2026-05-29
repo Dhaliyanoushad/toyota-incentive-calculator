@@ -61,10 +61,10 @@ export default function OfficerHistoryPage() {
   return (
     <div className="space-y-6">
       {/* Title */}
-      <div className="flex items-center justify-between border-b border-gray-200 pb-5">
+      <div className="flex items-center justify-between border-b border-gray-200 pb-4">
         <div>
-          <h1 className="text-3xl font-black tracking-tight text-toyota-black">Incentive Logs</h1>
-          <p className="mt-1 text-sm text-toyota-charcoal">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-toyota-black">Incentive Logs</h1>
+          <p className="mt-0.5 text-xs sm:text-sm text-toyota-charcoal">
             Review your historical monthly sales records and compiled payout calculations.
           </p>
         </div>
@@ -96,7 +96,7 @@ export default function OfficerHistoryPage() {
         </div>
       ) : (
         <div className="bg-toyota-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto custom-scrollbar">
             <table className="min-w-full divide-y divide-gray-250 text-left text-sm text-toyota-black">
               <thead className="bg-toyota-light-gray text-xs font-bold uppercase tracking-wider text-toyota-charcoal">
                 <tr>
@@ -112,7 +112,7 @@ export default function OfficerHistoryPage() {
                   const isExpanded = expandedId === rec._id;
                   return (
                     <React.Fragment key={rec._id}>
-                      <tr className="hover:bg-toyota-light-gray/30 transition-colors">
+                      <tr className="odd:bg-toyota-white even:bg-toyota-light-gray/25 hover:bg-toyota-light-gray/50 transition-colors">
                         <td className="whitespace-nowrap px-6 py-4 font-bold">
                           {getMonthName(rec.month)} {rec.year}
                         </td>

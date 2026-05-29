@@ -142,10 +142,10 @@ export default function AdminCarsPage() {
   return (
     <div className="space-y-6">
       {/* Title section */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-gray-200 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-gray-200 pb-4">
         <div>
-          <h1 className="text-3xl font-black tracking-tight text-toyota-black">Car Inventory</h1>
-          <p className="mt-1 text-sm text-toyota-charcoal">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-toyota-black">Car Inventory</h1>
+          <p className="mt-0.5 text-xs sm:text-sm text-toyota-charcoal">
             Add, configure, or retire Toyota model variants sold by officers.
           </p>
         </div>
@@ -182,7 +182,7 @@ export default function AdminCarsPage() {
         </div>
       ) : (
         <div className="bg-toyota-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto custom-scrollbar">
             <table className="min-w-full divide-y divide-gray-250 text-left text-sm text-toyota-black">
               <thead className="bg-toyota-light-gray text-xs font-bold uppercase tracking-wider text-toyota-charcoal">
                 <tr>
@@ -195,7 +195,7 @@ export default function AdminCarsPage() {
               </thead>
               <tbody className="divide-y divide-gray-200 bg-toyota-white">
                 {cars.map((car) => (
-                  <tr key={car._id} className="hover:bg-toyota-light-gray/50 transition-colors">
+                  <tr key={car._id} className="odd:bg-toyota-white even:bg-toyota-light-gray/25 hover:bg-toyota-light-gray/50 transition-colors">
                     <td className="whitespace-nowrap px-6 py-4 font-bold">{car.modelName}</td>
                     <td className="whitespace-nowrap px-6 py-4 text-toyota-charcoal">{car.baseSuffix}</td>
                     <td className="whitespace-nowrap px-6 py-4 text-toyota-charcoal">{car.variant}</td>

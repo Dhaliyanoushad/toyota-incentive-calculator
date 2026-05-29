@@ -153,32 +153,12 @@ export default function AdminSlabsPage() {
   return (
     <div className="space-y-6">
       {/* Title block */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-gray-200 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-gray-200 pb-4">
         <div>
-          <h1 className="text-3xl font-black tracking-tight text-toyota-black">Dynamic Slab Engine</h1>
-          <p className="mt-1 text-sm text-toyota-charcoal">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-toyota-black">Dynamic Slab Engine</h1>
+          <p className="mt-0.5 text-xs sm:text-sm text-toyota-charcoal">
             Define corporate volume incentive rates. Modifications instantly recalculate dashboard aggregates.
           </p>
-        </div>
-        
-        <div className="flex gap-2 self-start sm:self-center">
-          <button
-            onClick={handleResetDefaults}
-            disabled={saving}
-            className="flex items-center gap-1.5 border border-gray-300 hover:bg-gray-100 px-3 py-2 rounded text-xs font-bold uppercase transition-colors tracking-wider cursor-pointer disabled:opacity-50"
-          >
-            <RotateCcw className="h-4 w-4" />
-            Reset Defaults
-          </button>
-          
-          <button
-            onClick={handleAddSlab}
-            disabled={saving}
-            className="flex items-center gap-1.5 border border-toyota-red text-toyota-red hover:bg-red-50 px-3 py-2 rounded text-xs font-bold uppercase transition-colors tracking-wider cursor-pointer disabled:opacity-50"
-          >
-            <Plus className="h-4 w-4" />
-            Add Bracket
-          </button>
         </div>
       </div>
 
@@ -213,28 +193,30 @@ export default function AdminSlabsPage() {
         <div className="space-y-6">
           
           {/* Slabs visual timeline preview */}
-          <div className="bg-toyota-white p-6 border border-gray-200 rounded-lg shadow-sm">
+          <div className="bg-toyota-white p-4 sm:p-6 border border-gray-200 rounded-lg shadow-sm">
             <h3 className="text-xs font-bold uppercase tracking-wider text-toyota-charcoal mb-4 flex items-center gap-1.5">
               <Layers className="h-4 w-4 text-toyota-red" />
               Interactive sequence visualizer
             </h3>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3">
               {slabs.map((slab, i) => (
                 <React.Fragment key={i}>
-                  <div className="bg-toyota-light-gray border border-gray-200 rounded-lg p-3 flex flex-col items-center min-w-[120px] shadow-sm">
-                    <span className="text-[10px] font-bold text-toyota-charcoal uppercase tracking-wider">
-                      Tier {i + 1}
-                    </span>
-                    <span className="text-sm font-black text-toyota-black mt-1">
-                      {slab.startCount} {slab.endCount !== null ? `- ${slab.endCount}` : '+'} Cars
-                    </span>
-                    <span className="text-xs font-bold text-toyota-red mt-1">
+                  <div className="bg-toyota-light-gray border border-gray-200 rounded p-3 flex flex-row md:flex-col items-center justify-between md:justify-center min-w-[120px] shadow-sm flex-1">
+                    <div className="flex flex-col items-start md:items-center">
+                      <span className="text-[10px] font-bold text-toyota-charcoal uppercase tracking-wider">
+                        Tier {i + 1}
+                      </span>
+                      <span className="text-xs sm:text-sm font-bold text-toyota-black mt-0.5 whitespace-nowrap">
+                        {slab.startCount} {slab.endCount !== null ? `- ${slab.endCount}` : '+'} Cars
+                      </span>
+                    </div>
+                    <span className="text-xs font-bold text-toyota-red mt-0 md:mt-1 whitespace-nowrap">
                       ₹{slab.rate.toLocaleString('en-IN')}/car
                     </span>
                   </div>
-                  {i < slabs.length - 1 && (
-                    <span className="text-toyota-charcoal font-black text-lg">→</span>
-                  )}
+                  {/* {i < slabs.length - 1 && (
+                    <span className="text-toyota-charcoal font-black text-sm text-center block md:inline rotate-90 md:rotate-0 my-0.5 md:my-0 shrink-0">↓</span>
+                  )} */}
                 </React.Fragment>
               ))}
             </div>
@@ -242,7 +224,9 @@ export default function AdminSlabsPage() {
 
           {/* Slabs configurator sheet */}
           <div className="bg-toyota-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
+            
+            {/* Desktop Table View (visible on screen widths >= md) */}
+            <div className="hidden md:block overflow-x-auto custom-scrollbar">
               <table className="min-w-full divide-y divide-gray-250 text-left text-sm text-toyota-black">
                 <thead className="bg-toyota-light-gray text-xs font-bold uppercase tracking-wider text-toyota-charcoal">
                   <tr>
@@ -311,15 +295,114 @@ export default function AdminSlabsPage() {
               </table>
             </div>
 
-            {/* Sync Save Button */}
-            <div className="bg-toyota-light-gray p-4 flex justify-between items-center border-t border-gray-250">
-              <span className="text-xs text-toyota-charcoal font-semibold">
+            {/* Mobile Stacked Card View (visible on screen widths < md) */}
+            <div className="block md:hidden divide-y divide-gray-250 bg-toyota-white">
+              {slabs.map((slab, i) => {
+                const isLast = i === slabs.length - 1;
+                return (
+                  <div key={i} className="p-4 space-y-3 hover:bg-toyota-light-gray/10 transition-colors">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-xs text-toyota-black flex items-center gap-1.5">
+                        Tier {i + 1}
+                        {isLast && (
+                          <span className="text-[9px] bg-red-100 text-toyota-red font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">
+                            Open-Ended
+                          </span>
+                        )}
+                      </span>
+                      <button
+                        onClick={() => handleRemoveSlab(i)}
+                        disabled={slabs.length <= 1}
+                        className="inline-flex items-center justify-center p-2 rounded border border-toyota-red text-toyota-red hover:bg-red-50 cursor-pointer disabled:opacity-30 disabled:hover:bg-transparent"
+                        title="Delete Slab Bracket"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[9px] font-bold uppercase tracking-wider text-toyota-charcoal mb-1">
+                          Volume Limit
+                        </label>
+                        {isLast ? (
+                          <span className="block text-xs font-semibold text-toyota-charcoal py-1.5 bg-toyota-light-gray/40 px-2.5 rounded border border-gray-200">
+                            {slab.startCount}+ Cars
+                          </span>
+                        ) : (
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs font-semibold text-toyota-charcoal bg-toyota-light-gray/40 border border-gray-200 px-2.5 py-1.5 rounded">
+                              {slab.startCount}
+                            </span>
+                            <span className="text-[10px] font-bold text-toyota-charcoal uppercase">to</span>
+                            <input
+                              type="number"
+                              min={slab.startCount}
+                              value={slab.endCount || ''}
+                              onChange={(e) => handleEndChange(i, e.target.value)}
+                              className="w-full rounded border border-gray-300 px-2 py-1.5 text-xs font-semibold outline-none text-center bg-toyota-white"
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-[9px] font-bold uppercase tracking-wider text-toyota-charcoal mb-1">
+                          Incentive / Car
+                        </label>
+                        <div className="relative rounded-md shadow-sm">
+                          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2.5">
+                            <span className="text-gray-500 text-xs">₹</span>
+                          </div>
+                          <input
+                            type="number"
+                            min="0"
+                            placeholder="0"
+                            value={slab.rate || ''}
+                            onChange={(e) => handleRateChange(i, e.target.value)}
+                            className="w-full rounded border border-gray-300 py-1.5 pl-6 pr-2 text-xs font-bold outline-none bg-toyota-white"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Form Action Controls inside the white form container */}
+            <div className="p-4 bg-toyota-white border-t border-gray-200 flex flex-col sm:flex-row gap-2.5 justify-start">
+              <button
+                type="button"
+                onClick={handleAddSlab}
+                disabled={saving}
+                className="flex items-center justify-center gap-1.5 border border-toyota-red bg-toyota-white text-toyota-red hover:bg-red-50 px-4 py-2.5 rounded text-xs font-bold uppercase transition-colors tracking-wider shadow-sm cursor-pointer disabled:opacity-50 w-full sm:w-auto"
+              >
+                <Plus className="h-4 w-4" />
+                Add Bracket
+              </button>
+              
+              <button
+                type="button"
+                onClick={handleResetDefaults}
+                disabled={saving}
+                className="flex items-center justify-center gap-1.5 border border-gray-300 bg-toyota-white text-toyota-black hover:bg-gray-100 px-4 py-2.5 rounded text-xs font-bold uppercase transition-colors tracking-wider shadow-sm cursor-pointer disabled:opacity-50 w-full sm:w-auto"
+              >
+                <RotateCcw className="h-4 w-4 text-toyota-charcoal" />
+                Reset Defaults
+              </button>
+            </div>
+
+            {/* Sync Save Configuration Footer */}
+            <div className="bg-toyota-light-gray p-4 border-t border-gray-250 flex flex-col sm:flex-row gap-3 sm:gap-4 sm:justify-between sm:items-center">
+              <span className="text-[11px] sm:text-xs text-toyota-charcoal font-semibold">
                 Note: Saving will immediately sync calculations across all user portals.
               </span>
               <button
+                type="button"
                 onClick={handleSaveSlabs}
                 disabled={saving}
-                className="flex items-center gap-1.5 bg-toyota-red hover:bg-red-700 text-toyota-white px-5 py-2.5 rounded text-xs font-bold uppercase transition-colors tracking-wider shadow cursor-pointer disabled:opacity-50"
+                className="flex items-center justify-center gap-1.5 bg-toyota-red hover:bg-red-700 text-toyota-white px-6 py-2.5 rounded text-xs font-bold uppercase transition-colors tracking-wider shadow cursor-pointer disabled:opacity-50 w-full sm:w-auto shrink-0"
               >
                 <Save className="h-4 w-4" />
                 {saving ? 'Synchronizing...' : 'Save Configuration'}

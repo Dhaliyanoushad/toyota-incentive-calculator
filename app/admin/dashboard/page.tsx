@@ -61,6 +61,15 @@ export default function AdminDashboardPage() {
     fetchDashboardStats();
   }, []);
 
+  const getMonthName = (monthStr: string) => {
+    const months: Record<string, string> = {
+      '01': 'January', '02': 'February', '03': 'March', '04': 'April',
+      '05': 'May', '06': 'June', '07': 'July', '08': 'August',
+      '09': 'September', '10': 'October', '11': 'November', '12': 'December'
+    };
+    return months[monthStr] || monthStr;
+  };
+
   const handleToggleMode = async (mode: 'progressive' | 'flat') => {
     setUpdatingMode(true);
     setSuccessMsg('');
@@ -72,7 +81,8 @@ export default function AdminDashboardPage() {
       });
       if (res.ok) {
         setCalcMode(mode);
-        setSuccessMsg(`Calculation Mode switched to ${mode.toUpperCase()}! Recalculating payouts...`);
+        const modeText = mode === 'progressive' ? 'Step-by-Step (Brackets)' : 'Flat Rate (All Cars)';
+        setSuccessMsg(`Calculation Method switched to ${modeText}! Recalculating payouts...`);
         // Refresh stats since payouts are dynamically re-calculated based on mode
         await fetchDashboardStats();
         setTimeout(() => setSuccessMsg(''), 4000);
@@ -112,42 +122,42 @@ export default function AdminDashboardPage() {
   return (
     <div className="space-y-8">
       {/* Page Title & Banner */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-gray-200 pb-5">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-gray-200 pb-4">
         <div>
-          <h1 className="text-3xl font-black tracking-tight text-toyota-black">Analytics Overview</h1>
-          <p className="mt-1 text-sm text-toyota-charcoal">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-toyota-black">Analytics Overview</h1>
+          <p className="mt-0.5 text-xs sm:text-sm text-toyota-charcoal">
             Corporate performance stats, active payout configurations, and sales logs.
           </p>
         </div>
         
         {/* Toggle Calculation Mode Settings Panel */}
-        <div className="bg-toyota-white p-3 rounded-lg border border-gray-200 shadow-sm flex flex-col sm:flex-row items-center gap-3">
-          <div className="flex items-center gap-1.5 text-toyota-charcoal text-xs font-bold uppercase tracking-wider">
-            <SettingsIcon className="h-4 w-4 text-toyota-red" />
-            Calculation Mode:
+        <div className="bg-toyota-white p-2 sm:p-2.5 rounded-lg border border-gray-200 shadow-sm flex flex-row items-center gap-2.5 self-start md:self-center">
+          <div className="flex items-center gap-1 text-toyota-charcoal text-[10px] sm:text-xs font-semibold uppercase tracking-wider">
+            <SettingsIcon className="h-3.5 w-3.5 text-toyota-red shrink-0" />
+            <span className="hidden sm:inline">Method:</span>
           </div>
           <div className="flex rounded-md shadow-sm">
             <button
               onClick={() => handleToggleMode('progressive')}
               disabled={updatingMode}
-              className={`px-3 py-1.5 text-xs font-bold rounded-l-md transition-colors cursor-pointer border-y border-l ${
+              className={`px-2.5 py-1 text-[11px] font-bold rounded-l transition-colors cursor-pointer border-y border-l ${
                 calcMode === 'progressive'
                   ? 'bg-toyota-red text-toyota-white border-toyota-red'
                   : 'bg-toyota-light-gray text-toyota-charcoal border-gray-300 hover:bg-gray-100'
               }`}
             >
-              Step Progressive
+              Step-by-Step
             </button>
             <button
               onClick={() => handleToggleMode('flat')}
               disabled={updatingMode}
-              className={`px-3 py-1.5 text-xs font-bold rounded-r-md transition-colors cursor-pointer border ${
+              className={`px-2.5 py-1 text-[11px] font-bold rounded-r transition-colors cursor-pointer border ${
                 calcMode === 'flat'
                   ? 'bg-toyota-red text-toyota-white border-toyota-red'
                   : 'bg-toyota-light-gray text-toyota-charcoal border-gray-300 hover:bg-gray-100'
               }`}
             >
-              Flat Retroactive
+              Flat Rate
             </button>
           </div>
         </div>
@@ -161,64 +171,64 @@ export default function AdminDashboardPage() {
       )}
 
       {/* KPI GRID */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {/* 1. Total Officers */}
-        <div className="bg-toyota-white p-6 rounded-lg border border-gray-200 shadow-sm flex items-center justify-between">
+        <div className="bg-toyota-white p-4 sm:p-5 rounded-lg border border-gray-200 shadow-sm flex items-center justify-between">
           <div>
-            <span className="block text-xs font-bold uppercase tracking-widest text-toyota-charcoal">
+            <span className="block text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-toyota-charcoal">
               Sales Officers
             </span>
-            <span className="block mt-2 text-3xl font-black text-toyota-black">
+            <span className="block mt-1 text-xl sm:text-2xl font-bold text-toyota-black whitespace-nowrap">
               {data.kpis.totalOfficers}
             </span>
           </div>
-          <div className="p-3 bg-gray-100 text-toyota-charcoal rounded-lg">
-            <Users className="h-6 w-6 text-toyota-dark-gray" />
+          <div className="p-2.5 bg-gray-100 text-toyota-charcoal rounded-lg shrink-0">
+            <Users className="h-5 w-5 text-toyota-dark-gray" />
           </div>
         </div>
 
         {/* 2. Total Cars Sold */}
-        <div className="bg-toyota-white p-6 rounded-lg border border-gray-200 shadow-sm flex items-center justify-between">
+        <div className="bg-toyota-white p-4 sm:p-5 rounded-lg border border-gray-200 shadow-sm flex items-center justify-between">
           <div>
-            <span className="block text-xs font-bold uppercase tracking-widest text-toyota-charcoal">
+            <span className="block text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-toyota-charcoal">
               Total Cars Sold
             </span>
-            <span className="block mt-2 text-3xl font-black text-toyota-black">
+            <span className="block mt-1 text-xl sm:text-2xl font-bold text-toyota-black whitespace-nowrap">
               {data.kpis.totalCarsSold}
             </span>
           </div>
-          <div className="p-3 bg-gray-100 text-toyota-charcoal rounded-lg">
-            <Car className="h-6 w-6 text-toyota-dark-gray" />
+          <div className="p-2.5 bg-gray-100 text-toyota-charcoal rounded-lg shrink-0">
+            <Car className="h-5 w-5 text-toyota-dark-gray" />
           </div>
         </div>
 
         {/* 3. Total Incentive Paid */}
-        <div className="bg-toyota-white p-6 rounded-lg border border-gray-200 shadow-sm flex items-center justify-between">
+        <div className="bg-toyota-white p-4 sm:p-5 rounded-lg border border-gray-200 shadow-sm flex items-center justify-between">
           <div>
-            <span className="block text-xs font-bold uppercase tracking-widest text-toyota-charcoal">
+            <span className="block text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-toyota-charcoal">
               Incentives Disbursed
             </span>
-            <span className="block mt-2 text-3xl font-black text-toyota-red">
+            <span className="block mt-1 text-xl sm:text-2xl font-bold text-toyota-red whitespace-nowrap">
               ₹{data.kpis.totalIncentivePaid.toLocaleString('en-IN')}
             </span>
           </div>
-          <div className="p-3 bg-red-50 text-toyota-red rounded-lg">
-            <TrendingUp className="h-6 w-6" />
+          <div className="p-2.5 bg-red-50 text-toyota-red rounded-lg shrink-0">
+            <TrendingUp className="h-5 w-5" />
           </div>
         </div>
 
         {/* 4. Active Incentive Slabs */}
-        <div className="bg-toyota-white p-6 rounded-lg border border-gray-200 shadow-sm flex items-center justify-between">
+        <div className="bg-toyota-white p-4 sm:p-5 rounded-lg border border-gray-200 shadow-sm flex items-center justify-between">
           <div>
-            <span className="block text-xs font-bold uppercase tracking-widest text-toyota-charcoal">
+            <span className="block text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-toyota-charcoal">
               Active Slabs
             </span>
-            <span className="block mt-2 text-3xl font-black text-toyota-black">
+            <span className="block mt-1 text-xl sm:text-2xl font-bold text-toyota-black whitespace-nowrap">
               {data.kpis.activeSlabsCount}
             </span>
           </div>
-          <div className="p-3 bg-gray-100 text-toyota-charcoal rounded-lg">
-            <Layers className="h-6 w-6 text-toyota-dark-gray" />
+          <div className="p-2.5 bg-gray-100 text-toyota-charcoal rounded-lg shrink-0">
+            <Layers className="h-5 w-5 text-toyota-dark-gray" />
           </div>
         </div>
       </div>
@@ -351,6 +361,46 @@ export default function AdminDashboardPage() {
                   </div>
                 );
               })}
+            </div>
+          )}
+        </div>
+
+        {/* Recent Activity Panel */}
+        <div className="bg-toyota-white p-6 rounded-lg border border-gray-200 shadow-sm lg:col-span-2">
+          <h3 className="text-base font-bold uppercase tracking-wider text-toyota-black border-b border-gray-100 pb-3 mb-6">
+            Recent Sales Activities
+          </h3>
+          {data.records.length === 0 ? (
+            <div className="py-8 text-center text-toyota-charcoal text-sm">
+              No recent sales records logged in the database.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {data.records.slice(0, 4).map((rec, idx) => (
+                <div key={rec._id || idx} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-toyota-light-gray/40 border border-gray-200/60 rounded-md gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-full bg-toyota-dark-gray text-toyota-white flex items-center justify-center text-xs font-bold shrink-0">
+                      {rec.officerId?.name?.charAt(0) || 'O'}
+                    </div>
+                    <div>
+                      <span className="font-bold text-sm text-toyota-black block">
+                        {rec.officerId?.name || 'Unknown Officer'}
+                      </span>
+                      <span className="text-[11px] text-toyota-charcoal block">
+                        Submitted sales for {getMonthName(rec.month)} {rec.year}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start border-t sm:border-t-0 border-gray-200/60 pt-2 sm:pt-0 gap-1 sm:gap-0 sm:text-right shrink-0">
+                    <span className="font-bold text-xs sm:text-sm text-toyota-black whitespace-nowrap">
+                      {rec.totalCars} Cars Sold
+                    </span>
+                    <span className="font-bold text-toyota-red text-xs whitespace-nowrap">
+                      ₹{rec.totalIncentive.toLocaleString('en-IN')} paid
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>

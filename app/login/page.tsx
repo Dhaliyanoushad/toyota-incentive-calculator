@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Mail, Lock, AlertCircle, Award } from 'lucide-react';
+import { Mail, Lock, AlertCircle } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -52,9 +52,9 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen flex-col justify-center bg-toyota-light-gray px-6 py-12 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center items-center gap-2 text-toyota-red">
-          <Award className="h-10 w-10 stroke-[2.5]" />
-          <span className="text-2xl font-black tracking-tighter text-toyota-black">TOYOTA</span>
+        <div className="flex justify-center items-center gap-2.5">
+          <img src="/toyota.svg" alt="Toyota Logo" className="h-8 w-auto shrink-0" />
+          <span className="text-2xl font-bold tracking-tighter text-toyota-black">TOYOTA</span>
         </div>
         <h2 className="mt-4 text-center text-2xl font-bold leading-9 tracking-tight text-toyota-black">
           Incentive Management Portal
@@ -65,7 +65,7 @@ export default function LoginPage() {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-toyota-white px-8 py-10 shadow-md ring-1 ring-black/5 rounded-lg">
+        <div className="bg-toyota-white px-5 py-8 sm:px-8 sm:py-10 shadow-md ring-1 ring-black/5 rounded-lg">
           {error && (
             <div className="mb-5 flex items-start gap-2 rounded-md bg-red-50 p-3 text-sm text-toyota-red ring-1 ring-toyota-red/10">
               <AlertCircle className="h-5 w-5 shrink-0" />

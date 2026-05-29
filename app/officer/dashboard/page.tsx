@@ -281,10 +281,10 @@ export default function OfficerDashboardPage() {
   return (
     <div className="space-y-8">
       {/* Title banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-gray-200 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-gray-200 pb-4">
         <div>
-          <h1 className="text-3xl font-black tracking-tight text-toyota-black">Sales Submission Portal</h1>
-          <p className="mt-1 text-sm text-toyota-charcoal">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-toyota-black">Sales Submission Portal</h1>
+          <p className="mt-0.5 text-xs sm:text-sm text-toyota-charcoal">
             Log your vehicle volumes and view dynamic tiered incentive calculations in real time.
           </p>
         </div>
@@ -334,68 +334,68 @@ export default function OfficerDashboardPage() {
 
       {/* TRACKER KPI GRID */}
       {preview && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {/* 1. Cars Sold */}
-          <div className="bg-toyota-white p-6 rounded-lg border border-gray-200 shadow-sm flex items-center justify-between">
+          <div className="bg-toyota-white p-4 sm:p-5 rounded-lg border border-gray-200 shadow-sm flex items-center justify-between">
             <div>
-              <span className="block text-xs font-bold uppercase tracking-widest text-toyota-charcoal">
+              <span className="block text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-toyota-charcoal">
                 Volume Sold
               </span>
-              <span className="block mt-2 text-3xl font-black text-toyota-black">
+              <span className="block mt-1 text-xl sm:text-2xl font-bold text-toyota-black whitespace-nowrap">
                 {preview.totalCars} Cars
               </span>
             </div>
-            <div className="p-3 bg-gray-100 rounded-lg text-toyota-charcoal">
-              <Car className="h-6 w-6 text-toyota-dark-gray" />
+            <div className="p-2.5 bg-gray-100 rounded-lg text-toyota-charcoal shrink-0">
+              <Car className="h-5 w-5 text-toyota-dark-gray" />
             </div>
           </div>
 
           {/* 2. Calculated Incentive */}
-          <div className="bg-toyota-white p-6 rounded-lg border border-gray-200 shadow-sm flex items-center justify-between">
+          <div className="bg-toyota-white p-4 sm:p-5 rounded-lg border border-gray-200 shadow-sm flex items-center justify-between">
             <div>
-              <span className="block text-xs font-bold uppercase tracking-widest text-toyota-charcoal">
+              <span className="block text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-toyota-charcoal">
                 Calculated Payout
               </span>
-              <span className="block mt-2 text-3xl font-black text-toyota-red">
+              <span className="block mt-1 text-xl sm:text-2xl font-bold text-toyota-red whitespace-nowrap">
                 ₹{preview.totalIncentive.toLocaleString('en-IN')}
               </span>
             </div>
-            <div className="p-3 bg-red-50 text-toyota-red rounded-lg">
-              <Trophy className="h-6 w-6" />
+            <div className="p-2.5 bg-red-50 text-toyota-red rounded-lg shrink-0">
+              <Trophy className="h-5 w-5" />
             </div>
           </div>
 
           {/* 3. Current Tier Rate */}
-          <div className="bg-toyota-white p-6 rounded-lg border border-gray-200 shadow-sm flex items-center justify-between">
+          <div className="bg-toyota-white p-4 sm:p-5 rounded-lg border border-gray-200 shadow-sm flex items-center justify-between">
             <div>
-              <span className="block text-xs font-bold uppercase tracking-widest text-toyota-charcoal">
+              <span className="block text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-toyota-charcoal">
                 Highest Rate Reached
               </span>
-              <span className="block mt-2 text-3xl font-black text-toyota-black">
+              <span className="block mt-1 text-xl sm:text-2xl font-bold text-toyota-black whitespace-nowrap">
                 ₹{preview.nominalRate.toLocaleString('en-IN')}/car
               </span>
             </div>
-            <div className="p-3 bg-gray-100 rounded-lg text-toyota-charcoal">
-              <Sparkles className="h-6 w-6 text-toyota-dark-gray" />
+            <div className="p-2.5 bg-gray-100 rounded-lg text-toyota-charcoal shrink-0">
+              <Sparkles className="h-5 w-5 text-toyota-dark-gray" />
             </div>
           </div>
 
           {/* 4. Gap Analyser */}
-          <div className={`p-6 rounded-lg border shadow-sm flex items-center justify-between ${
+          <div className={`p-4 sm:p-5 rounded-lg border shadow-sm flex items-center justify-between ${
             gapInfo?.completed
               ? 'bg-green-50 border-green-200 text-green-800'
               : 'bg-amber-50 border-amber-200 text-amber-900'
           }`}>
             <div>
-              <span className="block text-xs font-bold uppercase tracking-widest text-toyota-charcoal">
+              <span className="block text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-toyota-charcoal">
                 Gap Analysis
               </span>
-              <span className="block mt-2 text-sm font-bold leading-tight">
+              <span className="block mt-1 text-xs sm:text-sm font-bold leading-tight">
                 {gapInfo?.message}
               </span>
             </div>
-            <div className={`p-3 rounded-lg ${gapInfo?.completed ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
-              <Trophy className="h-6 w-6" />
+            <div className={`p-2.5 rounded-lg shrink-0 ${gapInfo?.completed ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
+              <Trophy className="h-5 w-5" />
             </div>
           </div>
         </div>
@@ -485,7 +485,7 @@ export default function OfficerDashboardPage() {
                 return (
                   <div
                     key={car._id}
-                    className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-toyota-light-gray/20 transition-colors"
+                    className="flex flex-col sm:flex-row gap-3 sm:items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-toyota-light-gray/20 transition-colors"
                   >
                     <div>
                       <span className="block font-bold text-sm text-toyota-black">{car.modelName}</span>
@@ -494,7 +494,7 @@ export default function OfficerDashboardPage() {
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 self-start sm:self-center">
                       <button
                         type="button"
                         onClick={() => handleDecrement(car._id)}
@@ -562,7 +562,7 @@ export default function OfficerDashboardPage() {
               {/* Calc details */}
               <div className="bg-toyota-light-gray p-4 rounded-lg border border-gray-200">
                 <span className="block text-[10px] font-bold uppercase tracking-wider text-toyota-charcoal mb-2">
-                  Calculation Mode: {preview.calculationMode === 'progressive' ? 'Step Progressive' : 'Flat Retroactive'}
+                  Calculation Method: {preview.calculationMode === 'progressive' ? 'Step-by-Step' : 'Flat Rate (All Cars)'}
                 </span>
                 
                 <div className="space-y-2">
@@ -594,14 +594,13 @@ export default function OfficerDashboardPage() {
                 </h4>
                 {preview.calculationMode === 'progressive' ? (
                   <p>
-                    <span className="font-semibold text-toyota-black">Step Progressive Mode is active: </span>
-                    Your incentive rate escalates as you cross volume thresholds. 
-                    First 3 cars are paid at Tier 1, next 4 cars are paid at Tier 2, and any cars above 8 are paid at Tier 3.
+                    <span className="font-semibold text-toyota-black">Step-by-Step Method is active: </span>
+                    You are paid in brackets (like climbing stairs). Your first 3 cars earn ₹1,000 each. The next 4 cars earn ₹2,000 each. Any cars from the 8th onwards earn ₹3,500 each. Your total is the sum of these brackets.
                   </p>
                 ) : (
                   <p>
-                    <span className="font-semibold text-toyota-black">Flat Retroactive Mode is active: </span>
-                    Once you hit a volume slab, the highest rate reached is retroactively applied to <span className="font-bold text-toyota-black">all</span> cars sold during the month.
+                    <span className="font-semibold text-toyota-black">Flat Rate Method is active: </span>
+                    You get the highest rate you reach applied to <span className="font-bold text-toyota-black">all</span> the cars you sold this month. For example, if you sell 9 cars, you get ₹3,500 for every single one of them.
                   </p>
                 )}
               </div>

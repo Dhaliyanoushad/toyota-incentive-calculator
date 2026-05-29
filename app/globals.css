@@ -29,7 +29,38 @@ body {
   padding: 0;
 }
 
-/* Custom Scrollbar */
+/* Premium Thin Scrollbar Utility for overflow tables */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(88, 89, 91, 0.25);
+  border-radius: 9999px;
+  border: 1px solid transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(88, 89, 91, 0.45);
+}
+
+/* Mobile responsive scrollbars: completely hide visual bars for touch devices to prevent clashes */
+@media (max-width: 768px) {
+  .custom-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .custom-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+}
+
+/* Global browser scrollbar adjustments */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;

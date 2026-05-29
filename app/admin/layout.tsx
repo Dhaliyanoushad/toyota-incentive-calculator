@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
-  Award,
   LayoutDashboard,
   Car,
   Layers,
@@ -90,9 +89,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <Menu className="h-6 w-6" />
               </button>
               
-              <div className="flex items-center gap-2 text-toyota-red">
-                <Award className="h-7 w-7 stroke-[2.5]" />
-                <span className="text-xl font-black tracking-tighter text-toyota-white">TOYOTA</span>
+              <div className="flex items-center gap-2">
+                <img src="/toyota.svg" alt="Toyota Logo" className="h-6 w-auto shrink-0 brightness-0 invert" />
+                <span className="text-xl font-bold tracking-tighter text-toyota-white">TOYOTA</span>
                 <span className="hidden sm:inline-block h-4 w-[1px] bg-toyota-charcoal mx-1"></span>
                 <span className="hidden sm:inline-block text-xs uppercase tracking-widest text-toyota-light-gray font-bold">
                   Incentive Portal
