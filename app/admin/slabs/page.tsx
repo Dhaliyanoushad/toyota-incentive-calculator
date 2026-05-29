@@ -184,9 +184,9 @@ export default function AdminSlabsPage() {
 
       {loading ? (
         <div className="space-y-4 animate-pulse">
-          <div className="h-10 bg-gray-250 rounded"></div>
+          <div className="h-10 bg-gray-200 rounded"></div>
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-14 bg-gray-250 rounded"></div>
+            <div key={i} className="h-14 bg-gray-200 rounded"></div>
           ))}
         </div>
       ) : (
@@ -227,7 +227,7 @@ export default function AdminSlabsPage() {
             
             {/* Desktop Table View (visible on screen widths >= md) */}
             <div className="hidden md:block overflow-x-auto custom-scrollbar">
-              <table className="min-w-full divide-y divide-gray-250 text-left text-sm text-toyota-black">
+              <table className="min-w-full divide-y divide-gray-200 text-left text-sm text-toyota-black">
                 <thead className="bg-toyota-light-gray text-xs font-bold uppercase tracking-wider text-toyota-charcoal">
                   <tr>
                     <th className="px-6 py-4">Bracket Name</th>
@@ -296,7 +296,7 @@ export default function AdminSlabsPage() {
             </div>
 
             {/* Mobile Stacked Card View (visible on screen widths < md) */}
-            <div className="block md:hidden divide-y divide-gray-250 bg-toyota-white">
+            <div className="block md:hidden divide-y divide-gray-200 bg-toyota-white">
               {slabs.map((slab, i) => {
                 const isLast = i === slabs.length - 1;
                 return (
@@ -394,7 +394,7 @@ export default function AdminSlabsPage() {
             </div>
 
             {/* Sync Save Configuration Footer */}
-            <div className="bg-toyota-light-gray p-4 border-t border-gray-250 flex flex-col sm:flex-row gap-3 sm:gap-4 sm:justify-between sm:items-center">
+            <div className="bg-toyota-light-gray p-4 border-t border-gray-200 flex flex-col sm:flex-row gap-3 sm:gap-4 sm:justify-between sm:items-center">
               <span className="text-[11px] sm:text-xs text-toyota-charcoal font-semibold">
                 Note: Saving will immediately sync calculations across all user portals.
               </span>

@@ -88,13 +88,29 @@ select:focus-visible {
   outline-offset: 2px;
 }
 
-/* Custom input styling */
+/* Smooth Scrolling & Global Transitions */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Global premium tactile button press transitions */
+button, 
+.btn-transition {
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+button:active, 
+.btn-transition:active {
+  transform: scale(0.96) !important;
+}
+
+/* Custom input styling with smooth transitions */
 input, select {
   border-color: #d1d5db;
-  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  transition: border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 input:focus, select:focus {
   border-color: var(--toyota-red);
-  box-shadow: 0 0 0 2px rgba(235, 10, 30, 0.15);
+  box-shadow: 0 0 0 2px rgba(235, 10, 30, 0.12);
 }

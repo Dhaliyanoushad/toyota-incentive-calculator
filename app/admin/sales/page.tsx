@@ -228,9 +228,9 @@ export default function AdminSalesPage() {
       {/* Main Table Content */}
       {loading ? (
         <div className="space-y-4 animate-pulse">
-          <div className="h-10 bg-gray-250 rounded"></div>
+          <div className="h-10 bg-gray-200 rounded"></div>
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-14 bg-gray-250 rounded"></div>
+            <div key={i} className="h-14 bg-gray-200 rounded"></div>
           ))}
         </div>
       ) : filteredRecords.length === 0 ? (
@@ -245,7 +245,7 @@ export default function AdminSalesPage() {
           {/* Desktop Table View (visible on screen widths >= md) */}
           <div className="hidden md:block bg-toyota-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
             <div className="overflow-x-auto custom-scrollbar">
-              <table className="min-w-full divide-y divide-gray-250 text-left text-sm text-toyota-black">
+              <table className="min-w-full divide-y divide-gray-200 text-left text-sm text-toyota-black">
                 <thead className="bg-toyota-light-gray text-xs font-bold uppercase tracking-wider text-toyota-charcoal">
                   <tr>
                     <th className="px-6 py-4">Officer Name</th>

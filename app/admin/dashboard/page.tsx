@@ -97,15 +97,15 @@ export default function AdminDashboardPage() {
   if (loading || !data) {
     return (
       <div className="space-y-6 animate-pulse">
-        <div className="h-10 w-48 bg-gray-250 rounded"></div>
+        <div className="h-10 w-48 bg-gray-200 rounded"></div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-32 bg-gray-250 rounded-lg"></div>
+            <div key={i} className="h-32 bg-gray-200 rounded-lg"></div>
           ))}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="h-96 bg-gray-250 rounded-lg"></div>
-          <div className="h-96 bg-gray-250 rounded-lg"></div>
+          <div className="h-96 bg-gray-200 rounded-lg"></div>
+          <div className="h-96 bg-gray-200 rounded-lg"></div>
         </div>
       </div>
     );
