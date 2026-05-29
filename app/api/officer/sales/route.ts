@@ -4,7 +4,6 @@ import jwt from 'jsonwebtoken';
 import dbConnect from '@/lib/db';
 import SalesRecord from '@/models/SalesRecord';
 import IncentiveSlab from '@/models/IncentiveSlab';
-import Settings from '@/models/Settings';
 import CarModel from '@/models/CarModel';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-toyota-portal-key-change-this-in-production';
@@ -23,8 +22,8 @@ async function verifyOfficer() {
   }
 }
 
-// Core Math Engine: Calculate Progressive or Flat Incentive Payouts
-export function calculateIncentive(totalCars: number, slabs: any[], mode: 'progressive' | 'flat') {
+// Core Math Engine: Calculate Flat Rate Incentive Payouts
+export function calculateIncentive(totalCars: number, slabs: any[]) {
   if (totalCars <= 0 || slabs.length === 0) {
     return { totalIncentive: 0, nominalRate: 0, breakdown: [] };
   }
@@ -32,54 +31,27 @@ export function calculateIncentive(totalCars: number, slabs: any[], mode: 'progr
   // Ensure slabs are sorted
   const sortedSlabs = [...slabs].sort((a, b) => a.startCount - b.startCount);
   
-  let totalIncentive = 0;
-  let nominalRate = 0;
-  const breakdown: { slabRange: string; count: number; rate: number; subtotal: number }[] = [];
-
-  if (mode === 'flat') {
-    // Flat mode: Find the highest slab that covers totalCars
-    let activeSlab = sortedSlabs[0];
-    for (const slab of sortedSlabs) {
-      if (totalCars >= slab.startCount) {
-        activeSlab = slab;
-      }
-    }
-    
-    // If totalCars is less than first slab's startCount
-    if (totalCars < sortedSlabs[0].startCount) {
-      return { totalIncentive: 0, nominalRate: 0, breakdown: [] };
-    }
-
-    nominalRate = activeSlab.rate;
-    totalIncentive = totalCars * nominalRate;
-    breakdown.push({
-      slabRange: `${activeSlab.startCount}${activeSlab.endCount ? '-' + activeSlab.endCount : '+'}`,
-      count: totalCars,
-      rate: nominalRate,
-      subtotal: totalIncentive
-    });
-  } else {
-    // Progressive (step-wise) mode
-    for (const slab of sortedSlabs) {
-      const start = slab.startCount;
-      const end = slab.endCount !== null ? slab.endCount : Infinity;
-      
-      // Calculate how many cars fall into this specific slab bracket
-      const carsInSlab = Math.max(0, Math.min(end, totalCars) - (start - 1));
-      
-      if (carsInSlab > 0) {
-        const subtotal = carsInSlab * slab.rate;
-        totalIncentive += subtotal;
-        nominalRate = slab.rate; // record the highest rate hit
-        breakdown.push({
-          slabRange: `${start}${slab.endCount ? '-' + slab.endCount : '+'}`,
-          count: carsInSlab,
-          rate: slab.rate,
-          subtotal
-        });
-      }
+  // Flat mode: Find the highest slab that covers totalCars
+  let activeSlab = sortedSlabs[0];
+  for (const slab of sortedSlabs) {
+    if (totalCars >= slab.startCount) {
+      activeSlab = slab;
     }
   }
+  
+  // If totalCars is less than first slab's startCount
+  if (totalCars < sortedSlabs[0].startCount) {
+    return { totalIncentive: 0, nominalRate: 0, breakdown: [] };
+  }
+
+  const nominalRate = activeSlab.rate;
+  const totalIncentive = totalCars * nominalRate;
+  const breakdown = [{
+    slabRange: `${activeSlab.startCount}${activeSlab.endCount ? '-' + activeSlab.endCount : '+'}`,
+    count: totalCars,
+    rate: nominalRate,
+    subtotal: totalIncentive
+  }];
 
   return { totalIncentive, nominalRate, breakdown };
 }
@@ -92,6 +64,10 @@ export async function POST(req: Request) {
     }
 
     await dbConnect();
+
+    // Prevent Turbopack from tree-shaking the imported CarModel module
+    // which is needed for .populate('sales.modelId') to succeed.
+    const _dummyCarModel = CarModel;
     const { month, year, sales, previewOnly } = await req.json();
 
     if (!month || !year || !Array.isArray(sales)) {
@@ -113,21 +89,17 @@ export async function POST(req: Request) {
       }
     }
 
-    // 2. Fetch Active Slabs and Settings
+    // 2. Fetch Active Slabs
     const slabs = await IncentiveSlab.find({}).sort({ startCount: 1 });
-    let settings = await Settings.findOne({});
-    if (!settings) {
-      settings = await Settings.create({ calculationMode: 'progressive' });
-    }
 
     // 3. Compute final incentive
-    const calcResult = calculateIncentive(totalCars, slabs, settings.calculationMode);
+    const calcResult = calculateIncentive(totalCars, slabs);
 
     if (previewOnly) {
       return NextResponse.json({
         preview: {
           totalCars,
-          calculationMode: settings.calculationMode,
+          calculationMode: 'flat',
           ...calcResult
         }
       });
@@ -151,7 +123,7 @@ export async function POST(req: Request) {
       message: 'Monthly sales record submitted successfully',
       record,
       breakdown: calcResult.breakdown,
-      calculationMode: settings.calculationMode
+      calculationMode: 'flat'
     });
 
   } catch (error: any) {

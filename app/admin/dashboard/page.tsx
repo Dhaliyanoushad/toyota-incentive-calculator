@@ -6,7 +6,6 @@ import {
   Car,
   DollarSign,
   Layers,
-  Settings as SettingsIcon,
   TrendingUp,
   Award,
   Sparkles
@@ -30,8 +29,6 @@ interface DashboardData {
 export default function AdminDashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [calcMode, setCalcMode] = useState<'progressive' | 'flat'>('progressive');
-  const [updatingMode, setUpdatingMode] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
 
   // Fetch Dashboard Stats
@@ -41,14 +38,6 @@ export default function AdminDashboardPage() {
       if (res.ok) {
         const stats = await res.json();
         setData(stats);
-      }
-      
-      const settingsRes = await fetch('/api/admin/settings');
-      if (settingsRes.ok) {
-        const settingsData = await settingsRes.json();
-        if (settingsData.settings) {
-          setCalcMode(settingsData.settings.calculationMode);
-        }
       }
     } catch (err) {
       console.error(err);
@@ -68,30 +57,6 @@ export default function AdminDashboardPage() {
       '09': 'September', '10': 'October', '11': 'November', '12': 'December'
     };
     return months[monthStr] || monthStr;
-  };
-
-  const handleToggleMode = async (mode: 'progressive' | 'flat') => {
-    setUpdatingMode(true);
-    setSuccessMsg('');
-    try {
-      const res = await fetch('/api/admin/settings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ calculationMode: mode }),
-      });
-      if (res.ok) {
-        setCalcMode(mode);
-        const modeText = mode === 'progressive' ? 'Step-by-Step (Brackets)' : 'Flat Rate (All Cars)';
-        setSuccessMsg(`Calculation Method switched to ${modeText}! Recalculating payouts...`);
-        // Refresh stats since payouts are dynamically re-calculated based on mode
-        await fetchDashboardStats();
-        setTimeout(() => setSuccessMsg(''), 4000);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setUpdatingMode(false);
-    }
   };
 
   if (loading || !data) {
@@ -128,38 +93,6 @@ export default function AdminDashboardPage() {
           <p className="mt-0.5 text-xs sm:text-sm text-toyota-charcoal">
             Corporate performance stats, active payout configurations, and sales logs.
           </p>
-        </div>
-        
-        {/* Toggle Calculation Mode Settings Panel */}
-        <div className="bg-toyota-white p-2 sm:p-2.5 rounded-lg border border-gray-200 shadow-sm flex flex-row items-center gap-2.5 self-start md:self-center">
-          <div className="flex items-center gap-1 text-toyota-charcoal text-[10px] sm:text-xs font-semibold uppercase tracking-wider">
-            <SettingsIcon className="h-3.5 w-3.5 text-toyota-red shrink-0" />
-            <span className="hidden sm:inline">Method:</span>
-          </div>
-          <div className="flex rounded-md shadow-sm">
-            <button
-              onClick={() => handleToggleMode('progressive')}
-              disabled={updatingMode}
-              className={`px-2.5 py-1 text-[11px] font-bold rounded-l transition-colors cursor-pointer border-y border-l ${
-                calcMode === 'progressive'
-                  ? 'bg-toyota-red text-toyota-white border-toyota-red'
-                  : 'bg-toyota-light-gray text-toyota-charcoal border-gray-300 hover:bg-gray-100'
-              }`}
-            >
-              Step-by-Step
-            </button>
-            <button
-              onClick={() => handleToggleMode('flat')}
-              disabled={updatingMode}
-              className={`px-2.5 py-1 text-[11px] font-bold rounded-r transition-colors cursor-pointer border ${
-                calcMode === 'flat'
-                  ? 'bg-toyota-red text-toyota-white border-toyota-red'
-                  : 'bg-toyota-light-gray text-toyota-charcoal border-gray-300 hover:bg-gray-100'
-              }`}
-            >
-              Flat Rate
-            </button>
-          </div>
         </div>
       </div>
 

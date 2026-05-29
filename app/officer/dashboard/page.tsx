@@ -20,7 +20,7 @@ interface Slab {
 
 interface PreviewData {
   totalCars: number;
-  calculationMode: 'progressive' | 'flat';
+  calculationMode: string;
   totalIncentive: number;
   nominalRate: number;
   breakdown: {
@@ -562,7 +562,7 @@ export default function OfficerDashboardPage() {
               {/* Calc details */}
               <div className="bg-toyota-light-gray p-4 rounded-lg border border-gray-200">
                 <span className="block text-[10px] font-bold uppercase tracking-wider text-toyota-charcoal mb-2">
-                  Calculation Method: {preview.calculationMode === 'progressive' ? 'Step-by-Step' : 'Flat Rate (All Cars)'}
+                  Calculation Method: Flat Rate (All Cars)
                 </span>
                 
                 <div className="space-y-2">
@@ -592,17 +592,10 @@ export default function OfficerDashboardPage() {
                   <HelpCircle className="h-3.5 w-3.5" />
                   Understanding the math
                 </h4>
-                {preview.calculationMode === 'progressive' ? (
-                  <p>
-                    <span className="font-semibold text-toyota-black">Step-by-Step Method is active: </span>
-                    You are paid in brackets (like climbing stairs). Your first 3 cars earn ₹1,000 each. The next 4 cars earn ₹2,000 each. Any cars from the 8th onwards earn ₹3,500 each. Your total is the sum of these brackets.
-                  </p>
-                ) : (
-                  <p>
-                    <span className="font-semibold text-toyota-black">Flat Rate Method is active: </span>
-                    You get the highest rate you reach applied to <span className="font-bold text-toyota-black">all</span> the cars you sold this month. For example, if you sell 9 cars, you get ₹3,500 for every single one of them.
-                  </p>
-                )}
+                <p>
+                  <span className="font-semibold text-toyota-black">Flat Rate Method: </span>
+                  You get the highest rate you reach applied to <span className="font-bold text-toyota-black">all</span> the cars you sold this month. For example, if you sell 9 cars, you get ₹3,500 for every single one of them.
+                </p>
               </div>
 
             </div>

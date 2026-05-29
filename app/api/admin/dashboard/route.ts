@@ -29,6 +29,10 @@ export async function GET() {
 
     await dbConnect();
 
+    // Prevent Turbopack from tree-shaking the imported CarModel module
+    // which is needed for .populate('sales.modelId') to succeed.
+    const _dummyCarModel = CarModel;
+
     // 1. Core KPIs
     const totalOfficers = await User.countDocuments({ role: 'officer' });
     const activeSlabsCount = await IncentiveSlab.countDocuments({});

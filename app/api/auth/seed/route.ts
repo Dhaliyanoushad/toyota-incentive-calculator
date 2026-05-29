@@ -81,13 +81,12 @@ export async function POST() {
 
     // 6. Create default Settings
     await Settings.create({
-      calculationMode: 'progressive'
+      calculationMode: 'flat'
     });
 
     // 7. Seed Historical Sales
     // John Doe's April Sales (Total: 6 cars, rate: 2000)
-    // Slabs: 1-3 = 1000, 4-7 = 2000.
-    // Progressive: (3 * 1000) + (3 * 2000) = 9000
+    // Flat Rate payout: 6 * 2000 = 12000
     await SalesRecord.create({
       officerId: officer1._id,
       month: '04',
@@ -98,13 +97,12 @@ export async function POST() {
       ],
       totalCars: 6,
       incentiveRate: 2000,
-      totalIncentive: 9000,
+      totalIncentive: 12000,
       createdAt: new Date('2026-04-28T10:00:00Z')
     });
 
-    // John Doe's May Sales (Total: 9 cars)
-    // Slabs: 1-3 = 1000, 4-7 = 2000, 8+ = 3500
-    // Progressive: (3 * 1000) + (4 * 2000) + (2 * 3500) = 3000 + 8000 + 7000 = 18000
+    // John Doe's May Sales (Total: 9 cars, rate: 3500)
+    // Flat Rate payout: 9 * 3500 = 31500
     await SalesRecord.create({
       officerId: officer1._id,
       month: '05',
@@ -116,12 +114,12 @@ export async function POST() {
       ],
       totalCars: 9,
       incentiveRate: 3500,
-      totalIncentive: 18000,
+      totalIncentive: 31500,
       createdAt: new Date('2026-05-28T12:00:00Z')
     });
 
-    // Jane Smith's May Sales (Total: 3 cars)
-    // Progressive: 3 * 1000 = 3000
+    // Jane Smith's May Sales (Total: 3 cars, rate: 1000)
+    // Flat Rate payout: 3 * 1000 = 3000
     await SalesRecord.create({
       officerId: officer2._id,
       month: '05',
@@ -143,7 +141,7 @@ export async function POST() {
         cars: 4,
         slabs: 3,
         salesRecords: 3,
-        settings: 'progressive'
+        settings: 'flat'
       }
     });
 
