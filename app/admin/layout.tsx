@@ -56,10 +56,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   };
 
   const navLinks = [
-    { href: '/admin/dashboard', name: 'Dashboard Overview', icon: LayoutDashboard },
-    { href: '/admin/cars', name: 'Car Inventory Manager', icon: Car },
-    { href: '/admin/slabs', name: 'Dynamic Slab Engine', icon: Layers },
-    { href: '/admin/sales', name: 'All Sales Records', icon: FileText },
+    { href: '/admin/dashboard', name: 'Dashboard', icon: LayoutDashboard },
+    { href: '/admin/cars', name: 'Cars', icon: Car },
+    { href: '/admin/slabs', name: 'Slabs', icon: Layers },
+    { href: '/admin/sales', name: 'Sales', icon: FileText },
   ];
 
   if (!user) {
@@ -68,7 +68,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div className="flex h-screen w-screen items-center justify-center bg-toyota-light-gray">
         <div className="flex flex-col items-center gap-4">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-toyota-red border-t-transparent"></div>
-          <span className="text-sm font-semibold text-toyota-charcoal">Verifying Secure Admin Session...</span>
+          <span className="text-sm font-semibold text-toyota-charcoal">Loading...</span>
         </div>
       </div>
     );

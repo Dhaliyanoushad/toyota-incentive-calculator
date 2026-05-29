@@ -54,8 +54,8 @@ export default function OfficerLayout({ children }: { children: React.ReactNode 
   };
 
   const navLinks = [
-    { href: '/officer/dashboard', name: 'Log Monthly Sales', icon: PenTool },
-    { href: '/officer/history', name: 'Personal History', icon: History },
+    { href: '/officer/dashboard', name: 'Sales Input', icon: PenTool },
+    { href: '/officer/history', name: 'History', icon: History },
   ];
 
   if (!user) {
@@ -63,7 +63,7 @@ export default function OfficerLayout({ children }: { children: React.ReactNode 
       <div className="flex h-screen w-screen items-center justify-center bg-toyota-light-gray">
         <div className="flex flex-col items-center gap-4">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-toyota-red border-t-transparent"></div>
-          <span className="text-sm font-semibold text-toyota-charcoal">Connecting Secure Portal...</span>
+          <span className="text-sm font-semibold text-toyota-charcoal">Loading...</span>
         </div>
       </div>
     );

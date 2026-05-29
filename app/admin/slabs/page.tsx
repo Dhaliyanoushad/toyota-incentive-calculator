@@ -151,107 +151,104 @@ export default function AdminSlabsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 py-2">
       {/* Title block */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-gray-200 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-neutral-100 pb-6">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-toyota-black">Dynamic Slab Engine</h1>
-          <p className="mt-0.5 text-xs sm:text-sm text-toyota-charcoal">
-            Define corporate volume incentive rates. Modifications instantly recalculate dashboard aggregates.
+          <h1 className="text-xl font-bold tracking-tight text-neutral-900">Incentive Slabs</h1>
+          <p className="mt-1 text-xs text-neutral-400">
+            Define calculation rules and payout rates for sales volume tiers.
           </p>
         </div>
       </div>
 
       {errorMsg && (
-        <div className="flex items-start gap-2 bg-red-50 p-4 rounded border border-toyota-red/10 text-sm text-toyota-red">
-          <AlertTriangle className="h-5 w-5 shrink-0 text-toyota-red" />
+        <div className="flex items-start gap-2 bg-rose-50 p-4 border border-rose-100 rounded-md text-xs text-toyota-red">
+          <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
           <div>
-            <span className="font-bold">Invalid Sequence Configuration: </span>
+            <span className="font-semibold block mb-0.5">Configuration warning:</span>
             {errorMsg}
           </div>
         </div>
       )}
 
       {successMsg && (
-        <div className="flex items-start gap-2 bg-green-50 p-4 rounded border border-green-200 text-sm text-green-800">
-          <CheckCircle className="h-5 w-5 shrink-0 text-green-600" />
+        <div className="flex items-start gap-2 bg-emerald-50 p-4 border border-emerald-100 rounded-md text-xs text-emerald-800 animate-in fade-in duration-200">
+          <CheckCircle className="h-4 w-4 shrink-0 mt-0.5 text-emerald-600" />
           <div>
-            <span className="font-bold">Success: </span>
+            <span className="font-semibold block mb-0.5">Success:</span>
             {successMsg}
           </div>
         </div>
       )}
 
       {loading ? (
-        <div className="space-y-4 animate-pulse">
-          <div className="h-10 bg-gray-200 rounded"></div>
+        <div className="space-y-4">
+          <div className="h-11 bg-neutral-100 rounded animate-pulse"></div>
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-14 bg-gray-200 rounded"></div>
+            <div key={i} className="h-16 bg-neutral-50/55 rounded border border-neutral-100 animate-pulse"></div>
           ))}
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-6 animate-in fade-in duration-150">
           
           {/* Slabs visual timeline preview */}
-          <div className="bg-toyota-white p-4 sm:p-6 border border-gray-200 rounded-lg shadow-sm">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-toyota-charcoal mb-4 flex items-center gap-1.5">
+          <div className="bg-white p-6 border border-neutral-100 rounded-md space-y-4">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400 flex items-center gap-1.5">
               <Layers className="h-4 w-4 text-toyota-red" />
-              Interactive sequence visualizer
+              Active Incentive Timeline
             </h3>
-            <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3">
+            <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4">
               {slabs.map((slab, i) => (
                 <React.Fragment key={i}>
-                  <div className="bg-toyota-light-gray border border-gray-200 rounded p-3 flex flex-row md:flex-col items-center justify-between md:justify-center min-w-[120px] shadow-sm flex-1">
+                  <div className="bg-neutral-50/50 border border-neutral-100/60 rounded p-4 flex flex-row md:flex-col items-center justify-between md:justify-center min-w-[120px] flex-1 shadow-xs">
                     <div className="flex flex-col items-start md:items-center">
-                      <span className="text-[10px] font-bold text-toyota-charcoal uppercase tracking-wider">
+                      <span className="text-[9px] font-semibold text-neutral-400 uppercase tracking-wider">
                         Tier {i + 1}
                       </span>
-                      <span className="text-xs sm:text-sm font-bold text-toyota-black mt-0.5 whitespace-nowrap">
-                        {slab.startCount} {slab.endCount !== null ? `- ${slab.endCount}` : '+'} Cars
+                      <span className="text-xs sm:text-sm font-semibold text-neutral-800 mt-0.5 whitespace-nowrap">
+                        {slab.startCount} {slab.endCount !== null ? `– ${slab.endCount}` : '+'} Units
                       </span>
                     </div>
                     <span className="text-xs font-bold text-toyota-red mt-0 md:mt-1 whitespace-nowrap">
-                      ₹{slab.rate.toLocaleString('en-IN')}/car
+                      ₹{slab.rate.toLocaleString('en-IN')}/unit
                     </span>
                   </div>
-                  {/* {i < slabs.length - 1 && (
-                    <span className="text-toyota-charcoal font-black text-sm text-center block md:inline rotate-90 md:rotate-0 my-0.5 md:my-0 shrink-0">↓</span>
-                  )} */}
                 </React.Fragment>
               ))}
             </div>
           </div>
 
           {/* Slabs configurator sheet */}
-          <div className="bg-toyota-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+          <div className="bg-white rounded-md border border-neutral-100 overflow-hidden shadow-xs">
             
-            {/* Desktop Table View (visible on screen widths >= md) */}
+            {/* Desktop Table View */}
             <div className="hidden md:block overflow-x-auto custom-scrollbar">
-              <table className="min-w-full divide-y divide-gray-200 text-left text-sm text-toyota-black">
-                <thead className="bg-toyota-light-gray text-xs font-bold uppercase tracking-wider text-toyota-charcoal">
+              <table className="min-w-full divide-y divide-neutral-100 text-left text-sm text-neutral-900">
+                <thead className="bg-neutral-50/50 text-[10px] font-semibold uppercase tracking-wider text-neutral-400 border-b border-neutral-100">
                   <tr>
-                    <th className="px-6 py-4">Bracket Name</th>
-                    <th className="px-6 py-4">Start Volume</th>
-                    <th className="px-6 py-4">End Volume Limit</th>
-                    <th className="px-6 py-4">Incentive Level (INR ₹)</th>
+                    <th className="px-6 py-4">Slab Tier</th>
+                    <th className="px-6 py-4">Start Count</th>
+                    <th className="px-6 py-4">End Count</th>
+                    <th className="px-6 py-4">Rate (₹)</th>
                     <th className="px-6 py-4 text-right">Delete</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 bg-toyota-white">
+                <tbody className="divide-y divide-neutral-100 bg-white">
                   {slabs.map((slab, i) => {
                     const isLast = i === slabs.length - 1;
                     return (
-                      <tr key={i} className="hover:bg-toyota-light-gray/30 transition-colors">
-                        <td className="whitespace-nowrap px-6 py-4 font-bold">
-                          Tier {i + 1} {isLast && <span className="text-[10px] bg-red-100 text-toyota-red font-bold px-1.5 py-0.5 rounded ml-1">OPEN-ENDED</span>}
+                      <tr key={i} className="hover:bg-neutral-50/40 transition-colors">
+                        <td className="whitespace-nowrap px-6 py-4 font-semibold text-neutral-900">
+                          Tier {i + 1} {isLast && <span className="text-[9px] bg-rose-50 text-toyota-red border border-rose-100 font-bold px-1.5 py-0.5 rounded ml-1.5 uppercase tracking-wider">Open-Ended</span>}
                         </td>
-                        <td className="whitespace-nowrap px-6 py-4 font-bold text-toyota-charcoal">
+                        <td className="whitespace-nowrap px-6 py-4 font-medium text-neutral-600">
                           {slab.startCount}
                         </td>
                         <td className="whitespace-nowrap px-6 py-4">
                           {isLast ? (
-                            <span className="text-xs font-semibold text-toyota-charcoal">
-                              Infinity (Any volume above {slab.startCount - 1})
+                            <span className="text-xs font-medium text-neutral-400">
+                              No upper limit
                             </span>
                           ) : (
                             <input
@@ -259,14 +256,14 @@ export default function AdminSlabsPage() {
                               min={slab.startCount}
                               value={slab.endCount || ''}
                               onChange={(e) => handleEndChange(i, e.target.value)}
-                              className="w-24 rounded border border-gray-300 px-2.5 py-1.5 text-sm font-semibold outline-none"
+                              className="w-24 bg-white border border-neutral-200 focus:border-toyota-red rounded px-2.5 py-1.5 text-xs font-semibold outline-none transition-all text-neutral-800"
                             />
                           )}
                         </td>
                         <td className="whitespace-nowrap px-6 py-4">
-                          <div className="relative rounded-md shadow-sm max-w-[160px]">
+                          <div className="relative rounded shadow-xs max-w-[160px]">
                             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2.5">
-                              <span className="text-gray-500 sm:text-xs">₹</span>
+                              <span className="text-neutral-400 text-xs">₹</span>
                             </div>
                             <input
                               type="number"
@@ -274,7 +271,7 @@ export default function AdminSlabsPage() {
                               placeholder="0"
                               value={slab.rate || ''}
                               onChange={(e) => handleRateChange(i, e.target.value)}
-                              className="w-full rounded border border-gray-300 py-1.5 pl-7 pr-3 text-sm font-bold outline-none"
+                              className="w-full rounded border border-neutral-200 focus:border-toyota-red py-1.5 pl-7 pr-3 text-xs font-semibold outline-none transition-all bg-white text-neutral-800"
                             />
                           </div>
                         </td>
@@ -282,8 +279,8 @@ export default function AdminSlabsPage() {
                           <button
                             onClick={() => handleRemoveSlab(i)}
                             disabled={slabs.length <= 1}
-                            className="inline-flex items-center justify-center p-2 rounded border border-toyota-red text-toyota-red hover:bg-red-50 cursor-pointer disabled:opacity-30 disabled:hover:bg-transparent"
-                            title="Delete Slab Bracket"
+                            className="inline-flex items-center justify-center p-1.5 rounded border border-rose-100 text-toyota-red hover:bg-rose-50 transition-colors cursor-pointer disabled:opacity-30 disabled:hover:bg-transparent"
+                            title="Delete Slab"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
@@ -295,17 +292,17 @@ export default function AdminSlabsPage() {
               </table>
             </div>
 
-            {/* Mobile Stacked Card View (visible on screen widths < md) */}
-            <div className="block md:hidden divide-y divide-gray-200 bg-toyota-white">
+            {/* Mobile Stacked Card View */}
+            <div className="block md:hidden divide-y divide-neutral-100 bg-white">
               {slabs.map((slab, i) => {
                 const isLast = i === slabs.length - 1;
                 return (
-                  <div key={i} className="p-4 space-y-3 hover:bg-toyota-light-gray/10 transition-colors">
+                  <div key={i} className="p-5 space-y-4 hover:bg-neutral-50/20 transition-colors">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-xs text-toyota-black flex items-center gap-1.5">
+                      <span className="font-semibold text-xs text-neutral-900 flex items-center gap-1.5">
                         Tier {i + 1}
                         {isLast && (
-                          <span className="text-[9px] bg-red-100 text-toyota-red font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">
+                          <span className="text-[9px] bg-rose-50 text-toyota-red border border-rose-100 font-semibold px-1.5 py-0.5 rounded uppercase tracking-wider">
                             Open-Ended
                           </span>
                         )}
@@ -313,8 +310,8 @@ export default function AdminSlabsPage() {
                       <button
                         onClick={() => handleRemoveSlab(i)}
                         disabled={slabs.length <= 1}
-                        className="inline-flex items-center justify-center p-2 rounded border border-toyota-red text-toyota-red hover:bg-red-50 cursor-pointer disabled:opacity-30 disabled:hover:bg-transparent"
-                        title="Delete Slab Bracket"
+                        className="inline-flex items-center justify-center p-1.5 rounded border border-rose-100 text-toyota-red hover:bg-rose-50 transition-colors cursor-pointer disabled:opacity-30 disabled:hover:bg-transparent"
+                        title="Delete"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -322,37 +319,37 @@ export default function AdminSlabsPage() {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-[9px] font-bold uppercase tracking-wider text-toyota-charcoal mb-1">
+                        <label className="block text-[9px] font-semibold uppercase tracking-wider text-neutral-400 mb-1">
                           Volume Limit
                         </label>
                         {isLast ? (
-                          <span className="block text-xs font-semibold text-toyota-charcoal py-1.5 bg-toyota-light-gray/40 px-2.5 rounded border border-gray-200">
+                          <span className="block text-xs font-semibold text-neutral-600 py-1.5 bg-neutral-50 px-2.5 rounded border border-neutral-200/50">
                             {slab.startCount}+ Cars
                           </span>
                         ) : (
-                          <div className="flex items-center gap-1">
-                            <span className="text-xs font-semibold text-toyota-charcoal bg-toyota-light-gray/40 border border-gray-200 px-2.5 py-1.5 rounded">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs font-semibold text-neutral-600 bg-neutral-50 border border-neutral-200/50 px-2.5 py-1.5 rounded">
                               {slab.startCount}
                             </span>
-                            <span className="text-[10px] font-bold text-toyota-charcoal uppercase">to</span>
+                            <span className="text-[10px] font-semibold text-neutral-400 uppercase">to</span>
                             <input
                               type="number"
                               min={slab.startCount}
                               value={slab.endCount || ''}
                               onChange={(e) => handleEndChange(i, e.target.value)}
-                              className="w-full rounded border border-gray-300 px-2 py-1.5 text-xs font-semibold outline-none text-center bg-toyota-white"
+                              className="w-full rounded border border-neutral-200 focus:border-toyota-red px-2 py-1.5 text-xs font-semibold outline-none text-center bg-white text-neutral-800"
                             />
                           </div>
                         )}
                       </div>
 
                       <div>
-                        <label className="block text-[9px] font-bold uppercase tracking-wider text-toyota-charcoal mb-1">
-                          Incentive / Car
+                        <label className="block text-[9px] font-semibold uppercase tracking-wider text-neutral-400 mb-1">
+                          Rate
                         </label>
-                        <div className="relative rounded-md shadow-sm">
+                        <div className="relative rounded shadow-xs">
                           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2.5">
-                            <span className="text-gray-500 text-xs">₹</span>
+                            <span className="text-neutral-400 text-xs">₹</span>
                           </div>
                           <input
                             type="number"
@@ -360,7 +357,7 @@ export default function AdminSlabsPage() {
                             placeholder="0"
                             value={slab.rate || ''}
                             onChange={(e) => handleRateChange(i, e.target.value)}
-                            className="w-full rounded border border-gray-300 py-1.5 pl-6 pr-2 text-xs font-bold outline-none bg-toyota-white"
+                            className="w-full rounded border border-neutral-200 focus:border-toyota-red py-1.5 pl-6 pr-2 text-xs font-semibold outline-none bg-white text-neutral-800"
                           />
                         </div>
                       </div>
@@ -371,41 +368,41 @@ export default function AdminSlabsPage() {
             </div>
 
             {/* Form Action Controls inside the white form container */}
-            <div className="p-4 bg-toyota-white border-t border-gray-200 flex flex-col sm:flex-row gap-2.5 justify-start">
+            <div className="p-5 bg-white border-t border-neutral-100 flex flex-col sm:flex-row gap-2.5 justify-start">
               <button
                 type="button"
                 onClick={handleAddSlab}
                 disabled={saving}
-                className="flex items-center justify-center gap-1.5 border border-toyota-red bg-toyota-white text-toyota-red hover:bg-red-50 px-4 py-2.5 rounded text-xs font-bold uppercase transition-colors tracking-wider shadow-sm cursor-pointer disabled:opacity-50 w-full sm:w-auto"
+                className="flex items-center justify-center gap-1.5 border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 px-4 py-2 rounded text-xs font-semibold uppercase tracking-wider transition-colors shadow-xs cursor-pointer disabled:opacity-50 w-full sm:w-auto"
               >
                 <Plus className="h-4 w-4" />
-                Add Bracket
+                Add Slab
               </button>
               
               <button
                 type="button"
                 onClick={handleResetDefaults}
                 disabled={saving}
-                className="flex items-center justify-center gap-1.5 border border-gray-300 bg-toyota-white text-toyota-black hover:bg-gray-100 px-4 py-2.5 rounded text-xs font-bold uppercase transition-colors tracking-wider shadow-sm cursor-pointer disabled:opacity-50 w-full sm:w-auto"
+                className="flex items-center justify-center gap-1.5 border border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50 px-4 py-2 rounded text-xs font-semibold uppercase tracking-wider transition-colors shadow-xs cursor-pointer disabled:opacity-50 w-full sm:w-auto"
               >
-                <RotateCcw className="h-4 w-4 text-toyota-charcoal" />
+                <RotateCcw className="h-4 w-4 text-neutral-500" />
                 Reset Defaults
               </button>
             </div>
 
             {/* Sync Save Configuration Footer */}
-            <div className="bg-toyota-light-gray p-4 border-t border-gray-200 flex flex-col sm:flex-row gap-3 sm:gap-4 sm:justify-between sm:items-center">
-              <span className="text-[11px] sm:text-xs text-toyota-charcoal font-semibold">
-                Note: Saving will immediately sync calculations across all user portals.
+            <div className="bg-neutral-50/50 p-5 border-t border-neutral-100 flex flex-col sm:flex-row gap-4 sm:justify-between sm:items-center">
+              <span className="text-[11px] sm:text-xs text-neutral-400 font-medium">
+                Changes apply instantly across all active dashboard logs.
               </span>
               <button
                 type="button"
                 onClick={handleSaveSlabs}
                 disabled={saving}
-                className="flex items-center justify-center gap-1.5 bg-toyota-red hover:bg-red-700 text-toyota-white px-6 py-2.5 rounded text-xs font-bold uppercase transition-colors tracking-wider shadow cursor-pointer disabled:opacity-50 w-full sm:w-auto shrink-0"
+                className="flex items-center justify-center gap-1.5 bg-toyota-red hover:bg-red-700 text-white px-5 py-2.5 rounded text-xs font-semibold uppercase tracking-wider transition-colors shadow-sm cursor-pointer disabled:opacity-50 w-full sm:w-auto shrink-0"
               >
                 <Save className="h-4 w-4" />
-                {saving ? 'Synchronizing...' : 'Save Configuration'}
+                {saving ? 'Syncing...' : 'Sync Config'}
               </button>
             </div>
 

@@ -12,7 +12,9 @@ const SalesRecordSchema = new Schema({
   sales: [SaleItemSchema],
   totalCars: { type: Number, required: true, default: 0 },
   incentiveRate: { type: Number, required: true, default: 0 }, // For records, or reference rate
-  totalIncentive: { type: Number, required: true, default: 0 } // Computed total ₹ payout
+  totalIncentive: { type: Number, required: true, default: 0 }, // Computed total ₹ payout
+  status: { type: String, enum: ['draft', 'submitted'], default: 'draft', required: true },
+  submittedAt: { type: Date }
 }, {
   timestamps: true
 });

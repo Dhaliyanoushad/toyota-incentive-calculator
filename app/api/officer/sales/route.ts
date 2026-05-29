@@ -68,13 +68,58 @@ export async function POST(req: Request) {
     // Prevent Turbopack from tree-shaking the imported CarModel module
     // which is needed for .populate('sales.modelId') to succeed.
     const _dummyCarModel = CarModel;
-    const { month, year, sales, previewOnly } = await req.json();
+    const { month, year, sales, previewOnly, action } = await req.json();
 
     if (!month || !year || !Array.isArray(sales)) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // 1. Calculate total cars sold
+    // Determine current month/year
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
+
+    // Find existing record
+    const query = { officerId: officer.userId, month, year };
+    const existingRecord = await SalesRecord.findOne(query);
+
+    // 1. Locked State Check: If submitted, it is frozen.
+    if (existingRecord && existingRecord.status === 'submitted') {
+      if (previewOnly) {
+        return NextResponse.json({
+          preview: {
+            totalCars: existingRecord.totalCars,
+            calculationMode: 'flat',
+            totalIncentive: existingRecord.totalIncentive,
+            nominalRate: existingRecord.incentiveRate,
+            breakdown: [{
+              slabRange: 'Locked',
+              count: existingRecord.totalCars,
+              rate: existingRecord.incentiveRate,
+              subtotal: existingRecord.totalIncentive
+            }],
+            isLocked: true
+          }
+        });
+      } else {
+        return NextResponse.json(
+          { error: 'This month is locked and cannot be modified.' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // 2. Current Month Check: Only current month can be saved/submitted
+    if (!previewOnly) {
+      if (Number(year) !== currentYear || month !== currentMonth) {
+        return NextResponse.json(
+          { error: 'Only the current month can be edited.' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // 3. Calculate total cars sold
     let totalCars = 0;
     const cleanSales: { modelId: string; quantity: number }[] = [];
 
@@ -89,10 +134,10 @@ export async function POST(req: Request) {
       }
     }
 
-    // 2. Fetch Active Slabs
+    // 4. Fetch Active Slabs
     const slabs = await IncentiveSlab.find({}).sort({ startCount: 1 });
 
-    // 3. Compute final incentive
+    // 5. Compute final incentive
     const calcResult = calculateIncentive(totalCars, slabs);
 
     if (previewOnly) {
@@ -100,18 +145,21 @@ export async function POST(req: Request) {
         preview: {
           totalCars,
           calculationMode: 'flat',
-          ...calcResult
+          ...calcResult,
+          isLocked: false
         }
       });
     }
 
-    // 4. Save or Upsert Sales Record
-    const query = { officerId: officer.userId, month, year };
+    // 6. Save Draft vs Submit
+    const isSubmit = action === 'submit';
     const update = {
       sales: cleanSales,
       totalCars,
       incentiveRate: calcResult.nominalRate,
-      totalIncentive: calcResult.totalIncentive
+      totalIncentive: calcResult.totalIncentive,
+      status: isSubmit ? 'submitted' : 'draft',
+      ...(isSubmit ? { submittedAt: new Date() } : {})
     };
 
     const record = await SalesRecord.findOneAndUpdate(query, update, {
@@ -120,7 +168,7 @@ export async function POST(req: Request) {
     }).populate('sales.modelId');
 
     return NextResponse.json({
-      message: 'Monthly sales record submitted successfully',
+      message: isSubmit ? 'Monthly sales record submitted and locked successfully' : 'Draft saved successfully',
       record,
       breakdown: calcResult.breakdown,
       calculationMode: 'flat'

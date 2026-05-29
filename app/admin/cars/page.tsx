@@ -140,135 +140,179 @@ export default function AdminCarsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 py-2">
       {/* Title section */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-gray-200 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-neutral-100 pb-6">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-toyota-black">Car Inventory</h1>
-          <p className="mt-0.5 text-xs sm:text-sm text-toyota-charcoal">
-            Add, configure, or retire Toyota model variants sold by officers.
+          <h1 className="text-xl font-bold tracking-tight text-neutral-900">Car Inventory</h1>
+          <p className="mt-1 text-xs text-neutral-400">
+            Manage your active and retired Toyota catalog models.
           </p>
         </div>
         <button
           onClick={handleOpenAdd}
-          className="flex items-center justify-center gap-1.5 bg-toyota-red hover:bg-red-700 text-toyota-white px-4 py-2.5 rounded text-xs font-bold uppercase transition-colors tracking-wider shadow cursor-pointer self-start sm:self-center"
+          className="flex items-center justify-center gap-1.5 bg-toyota-red hover:bg-red-700 text-white px-4 py-2 rounded text-xs font-semibold uppercase tracking-wider transition-colors shadow-sm cursor-pointer self-start sm:self-center"
         >
           <Plus className="h-4 w-4" />
-          Add Vehicle Model
+          Add Car
         </button>
       </div>
 
       {/* Main Table */}
       {loading ? (
-        <div className="space-y-4 animate-pulse">
-          <div className="h-10 bg-gray-200 rounded"></div>
+        <div className="space-y-4">
+          <div className="h-11 bg-neutral-100 rounded animate-pulse"></div>
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-14 bg-gray-200 rounded"></div>
+            <div key={i} className="h-16 bg-neutral-50/55 rounded border border-neutral-100 animate-pulse"></div>
           ))}
         </div>
       ) : cars.length === 0 ? (
-        <div className="bg-toyota-white p-12 text-center border border-gray-200 rounded-lg shadow-sm">
-          <AlertCircle className="h-12 w-12 text-toyota-charcoal mx-auto mb-3" />
-          <h3 className="text-lg font-bold text-toyota-black mb-1">No Cars Configured</h3>
-          <p className="text-sm text-toyota-charcoal max-w-sm mx-auto mb-5">
-            Get started by adding your first Toyota vehicle model or reset the database on the login page!
+        <div className="bg-white py-16 px-6 text-center border border-neutral-100 rounded-md">
+          <AlertCircle className="h-8 w-8 text-neutral-300 mx-auto mb-3" />
+          <h3 className="text-sm font-semibold text-neutral-800">No vehicle models</h3>
+          <p className="text-xs text-neutral-400 mt-1 max-w-xs mx-auto mb-5">
+            Your Toyota inventory catalog is currently empty.
           </p>
           <button
             onClick={handleOpenAdd}
-            className="border border-toyota-red text-toyota-red px-4 py-2 rounded text-xs font-bold uppercase hover:bg-red-50 cursor-pointer"
+            className="border border-neutral-200 hover:bg-neutral-50 text-neutral-700 px-4 py-2 rounded text-xs font-semibold uppercase tracking-wider cursor-pointer bg-white transition-colors"
           >
-            Add First Model
+            Add Car
           </button>
         </div>
       ) : (
-        <div className="bg-toyota-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto custom-scrollbar">
-            <table className="min-w-full divide-y divide-gray-200 text-left text-sm text-toyota-black">
-              <thead className="bg-toyota-light-gray text-xs font-bold uppercase tracking-wider text-toyota-charcoal">
-                <tr>
-                  <th className="px-6 py-4">Model Name</th>
-                  <th className="px-6 py-4">Trim / Suffix</th>
-                  <th className="px-6 py-4">Variant Specs</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 bg-toyota-white">
-                {cars.map((car) => (
-                  <tr key={car._id} className="odd:bg-toyota-white even:bg-toyota-light-gray/25 hover:bg-toyota-light-gray/50 transition-colors">
-                    <td className="whitespace-nowrap px-6 py-4 font-bold">{car.modelName}</td>
-                    <td className="whitespace-nowrap px-6 py-4 text-toyota-charcoal">{car.baseSuffix}</td>
-                    <td className="whitespace-nowrap px-6 py-4 text-toyota-charcoal">{car.variant}</td>
-                    <td className="whitespace-nowrap px-6 py-4">
-                      <button
-                        onClick={() => toggleCarStatus(car)}
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-bold cursor-pointer transition-colors uppercase tracking-wide ${
-                          car.isActive
-                            ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                            : 'bg-red-100 text-toyota-red hover:bg-red-200'
-                        }`}
-                      >
-                        {car.isActive ? (
-                          <>
-                            <Check className="h-3 w-3 shrink-0" /> Active
-                          </>
-                        ) : (
-                          <>
-                            <EyeOff className="h-3 w-3 shrink-0" /> Retired
-                          </>
-                        )}
-                      </button>
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-right space-x-2">
-                      <button
-                        onClick={() => handleOpenEdit(car)}
-                        className="inline-flex items-center justify-center p-2 rounded border border-gray-300 text-toyota-charcoal hover:bg-gray-100 cursor-pointer"
-                        title="Edit Model"
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(car._id)}
-                        className="inline-flex items-center justify-center p-2 rounded border border-toyota-red text-toyota-red hover:bg-red-50 cursor-pointer"
-                        title="Delete Model"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </td>
+        <div className="space-y-4">
+          
+          {/* Desktop Table View */}
+          <div className="hidden md:block bg-white rounded-md border border-neutral-100 overflow-hidden">
+            <div className="overflow-x-auto custom-scrollbar">
+              <table className="min-w-full divide-y divide-neutral-100 text-left text-sm text-neutral-900">
+                <thead className="bg-neutral-50/50 text-[10px] font-semibold uppercase tracking-wider text-neutral-400 border-b border-neutral-100">
+                  <tr>
+                    <th className="px-6 py-4">Model Name</th>
+                    <th className="px-6 py-4">Trim</th>
+                    <th className="px-6 py-4">Variant</th>
+                    <th className="px-6 py-4">Status</th>
+                    <th className="px-6 py-4 text-right">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-neutral-100 bg-white">
+                  {cars.map((car) => (
+                    <tr key={car._id} className="hover:bg-neutral-50/40 transition-colors">
+                      <td className="whitespace-nowrap px-6 py-4 font-semibold text-neutral-900">{car.modelName}</td>
+                      <td className="whitespace-nowrap px-6 py-4 text-neutral-500 font-medium text-xs">{car.baseSuffix}</td>
+                      <td className="whitespace-nowrap px-6 py-4 text-neutral-500 font-medium text-xs">{car.variant}</td>
+                      <td className="whitespace-nowrap px-6 py-4">
+                        <button
+                          onClick={() => toggleCarStatus(car)}
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm text-xs font-semibold cursor-pointer transition-all uppercase tracking-wider ${
+                            car.isActive
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-100/80 hover:bg-emerald-100/50'
+                              : 'bg-rose-50 text-toyota-red border border-rose-100/80 hover:bg-rose-100/50'
+                          }`}
+                        >
+                          {car.isActive ? (
+                            <>
+                              <Check className="h-3 w-3 shrink-0" /> Active
+                            </>
+                          ) : (
+                            <>
+                              <EyeOff className="h-3 w-3 shrink-0" /> Retired
+                            </>
+                          )}
+                        </button>
+                      </td>
+                      <td className="whitespace-nowrap px-6 py-4 text-right space-x-2">
+                        <button
+                          onClick={() => handleOpenEdit(car)}
+                          className="inline-flex items-center justify-center p-1.5 rounded border border-neutral-200 text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50 transition-colors cursor-pointer"
+                          title="Edit Model"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(car._id)}
+                          className="inline-flex items-center justify-center p-1.5 rounded border border-rose-100 text-toyota-red hover:bg-rose-50 transition-colors cursor-pointer"
+                          title="Delete Model"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
+
+          {/* Mobile Stacked Card View */}
+          <div className="block md:hidden space-y-4">
+            {cars.map((car) => (
+              <div key={car._id} className="bg-white border border-neutral-100 rounded-md p-5 space-y-4 hover:border-neutral-200/80 transition-colors">
+                <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
+                  <div>
+                    <span className="font-semibold text-sm text-neutral-900 block">{car.modelName}</span>
+                    <span className="text-[11px] text-neutral-400 block mt-0.5">{car.baseSuffix} Trim · {car.variant}</span>
+                  </div>
+                  <button
+                    onClick={() => toggleCarStatus(car)}
+                    className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm text-[10px] font-semibold cursor-pointer transition-colors uppercase tracking-wider ${
+                      car.isActive
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
+                        : 'bg-rose-50 text-toyota-red border border-rose-100'
+                    }`}
+                  >
+                    {car.isActive ? 'Active' : 'Retired'}
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-end gap-2.5">
+                  <button
+                    onClick={() => handleOpenEdit(car)}
+                    className="inline-flex items-center justify-center gap-1 border border-neutral-200 hover:bg-neutral-50 px-3 py-1.5 rounded text-xs font-semibold uppercase tracking-wider text-neutral-600 bg-white cursor-pointer transition-colors"
+                  >
+                    <Pencil className="h-3.5 w-3.5" /> Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(car._id)}
+                    className="inline-flex items-center justify-center gap-1 border border-rose-100 text-toyota-red hover:bg-rose-50 px-3 py-1.5 rounded text-xs font-semibold uppercase tracking-wider cursor-pointer transition-colors"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" /> Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
         </div>
       )}
 
       {/* Slide-over or Modal Dialog */}
       {isFormOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
-          <div className="bg-toyota-white rounded-lg shadow-xl border border-gray-200 max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-150">
-            <div className="bg-toyota-dark-gray text-toyota-white px-6 py-4 flex items-center justify-between">
-              <h3 className="text-sm font-bold uppercase tracking-wider">
-                {editId ? 'Modify Vehicle Specs' : 'Add Vehicle Model'}
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-900/60 backdrop-blur-xs">
+          <div className="bg-white rounded-md shadow-xl border border-neutral-100 max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-150">
+            <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-white">
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-neutral-900">
+                {editId ? 'Edit Car Model' : 'Add Car Model'}
               </h3>
               <button
                 onClick={() => setIsFormOpen(false)}
-                className="text-toyota-white hover:text-toyota-red cursor-pointer"
+                className="text-neutral-400 hover:text-toyota-red cursor-pointer transition-colors"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSave} className="p-6 space-y-4">
+            <form onSubmit={handleSave} className="p-6 space-y-4 bg-white">
               {formError && (
-                <div className="flex items-start gap-2 bg-red-50 p-3 rounded text-xs text-toyota-red border border-toyota-red/10">
-                  <AlertCircle className="h-4 w-4 shrink-0" />
+                <div className="flex items-start gap-2 bg-rose-50 p-3.5 rounded text-xs text-toyota-red border border-rose-100">
+                  <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
                   <span>{formError}</span>
                 </div>
               )}
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-toyota-charcoal mb-1">
+              <div className="space-y-1">
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-neutral-400 mb-1">
                   Model Name
                 </label>
                 <input
@@ -277,13 +321,13 @@ export default function AdminCarsPage() {
                   placeholder="e.g. Toyota Corolla"
                   value={modelName}
                   onChange={(e) => setModelName(e.target.value)}
-                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm outline-none"
+                  className="w-full rounded border border-neutral-200 focus:border-toyota-red px-3 py-2 text-sm outline-none transition-all"
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-toyota-charcoal mb-1">
-                  Trim / Suffix
+              <div className="space-y-1">
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-neutral-400 mb-1">
+                  Trim suffix
                 </label>
                 <input
                   type="text"
@@ -291,13 +335,13 @@ export default function AdminCarsPage() {
                   placeholder="e.g. LE, SE, XLE"
                   value={baseSuffix}
                   onChange={(e) => setBaseSuffix(e.target.value)}
-                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm outline-none"
+                  className="w-full rounded border border-neutral-200 focus:border-toyota-red px-3 py-2 text-sm outline-none transition-all"
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-toyota-charcoal mb-1">
-                  Variant / Engine specs
+              <div className="space-y-1">
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-neutral-400 mb-1">
+                  Variant
                 </label>
                 <input
                   type="text"
@@ -305,35 +349,35 @@ export default function AdminCarsPage() {
                   placeholder="e.g. Hybrid, AWD, Gas"
                   value={variant}
                   onChange={(e) => setVariant(e.target.value)}
-                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm outline-none"
+                  className="w-full rounded border border-neutral-200 focus:border-toyota-red px-3 py-2 text-sm outline-none transition-all"
                 />
               </div>
 
-              <div className="flex items-center gap-2 pt-2">
+              <div className="flex items-center gap-2.5 pt-2">
                 <input
                   id="formIsActive"
                   type="checkbox"
                   checked={isActive}
                   onChange={(e) => setIsActive(e.target.checked)}
-                  className="h-4 w-4 rounded border-gray-300 text-toyota-red focus:ring-toyota-red"
+                  className="h-4 w-4 rounded border-neutral-300 text-toyota-red focus:ring-toyota-red cursor-pointer"
                 />
-                <label htmlFor="formIsActive" className="text-xs font-bold uppercase tracking-wider text-toyota-charcoal select-none">
-                  Available for selection (Active)
+                <label htmlFor="formIsActive" className="text-xs font-semibold uppercase tracking-wider text-neutral-500 select-none cursor-pointer">
+                  Active in Inventory
                 </label>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-150">
+              <div className="flex items-center justify-end gap-3 pt-5 border-t border-neutral-100 mt-2">
                 <button
                   type="button"
                   onClick={() => setIsFormOpen(false)}
-                  className="px-4 py-2 border border-gray-300 rounded text-xs font-bold uppercase hover:bg-gray-100 cursor-pointer"
+                  className="px-4 py-2 border border-neutral-200 hover:bg-neutral-50 text-xs font-semibold uppercase tracking-wider text-neutral-600 rounded bg-white cursor-pointer transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={actionLoading}
-                  className="px-4 py-2 bg-toyota-red hover:bg-red-700 text-toyota-white rounded text-xs font-bold uppercase transition-colors tracking-wider shadow cursor-pointer disabled:opacity-50"
+                  className="px-4 py-2 bg-toyota-red hover:bg-red-700 text-white rounded text-xs font-semibold uppercase tracking-wider transition-colors shadow-sm cursor-pointer disabled:opacity-50"
                 >
                   {actionLoading ? 'Saving...' : 'Save Model'}
                 </button>

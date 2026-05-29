@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Calendar, Car, Trophy, Sparkles, HelpCircle, Save, Info } from 'lucide-react';
+import { Calendar, Save, CheckCircle, Lock, ShieldAlert, FileClock } from 'lucide-react';
 
 interface CarModel {
   _id: string;
@@ -40,6 +40,12 @@ export default function OfficerDashboardPage() {
   const [selectedMonth, setSelectedMonth] = useState('05');
   const [selectedYear, setSelectedYear] = useState(2026);
 
+  // Locked state
+  const [isLocked, setIsLocked] = useState(false);
+
+  // Custom confirm submit modal state
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+
   // Volumes entered per modelId
   const [volumes, setVolumes] = useState<Record<string, number>>({});
 
@@ -48,6 +54,17 @@ export default function OfficerDashboardPage() {
   const [previewLoading, setPreviewLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  // Dates and Locking constraints configuration
+  const now = new Date();
+  const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
+  const currentYear = now.getFullYear();
+
+  const isCurrentMonth = selectedMonth === currentMonth && selectedYear === currentYear;
+  const isFutureMonth = selectedYear > currentYear || (selectedYear === currentYear && selectedMonth > currentMonth);
+  const isPastMonth = selectedYear < currentYear || (selectedYear === currentYear && selectedMonth < currentMonth);
+
+  const isEditable = isCurrentMonth && !isLocked;
 
   // Load cars and slabs on mount
   useEffect(() => {
@@ -62,12 +79,10 @@ export default function OfficerDashboardPage() {
           const carsData = await carsRes.json();
           const slabsData = await slabsRes.json();
           
-          // Only show active models
           const activeCars = (carsData.cars || []).filter((c: CarModel) => c.isActive);
           setCars(activeCars);
           setSlabs(slabsData.slabs || []);
 
-          // Initialize volumes
           const initialVolumes: Record<string, number> = {};
           activeCars.forEach((c: CarModel) => {
             initialVolumes[c._id] = 0;
@@ -87,6 +102,18 @@ export default function OfficerDashboardPage() {
   useEffect(() => {
     if (cars.length === 0) return;
 
+    const isFuture = selectedYear > currentYear || (selectedYear === currentYear && selectedMonth > currentMonth);
+    if (isFuture) {
+      const newVolumes: Record<string, number> = {};
+      cars.forEach((c) => {
+        newVolumes[c._id] = 0;
+      });
+      setVolumes(newVolumes);
+      setIsLocked(false);
+      setPreview(null);
+      return;
+    }
+
     async function fetchExistingSales() {
       setPreviewLoading(true);
       try {
@@ -98,10 +125,12 @@ export default function OfficerDashboardPage() {
           );
 
           const newVolumes: Record<string, number> = {};
-          // Initialize with 0
           cars.forEach((c) => {
             newVolumes[c._id] = 0;
           });
+
+          // Reset locked state
+          setIsLocked(false);
 
           if (record && Array.isArray(record.sales)) {
             record.sales.forEach((item: any) => {
@@ -110,17 +139,21 @@ export default function OfficerDashboardPage() {
                 newVolumes[modelIdStr] = item.quantity;
               }
             });
+            if (record.status === 'submitted') {
+              setIsLocked(true);
+            }
             setNotification({
               type: 'success',
-              message: `Retrieved saved sales records for ${getMonthName(selectedMonth)} ${selectedYear}.`
+              message: `Sales records synced for ${getMonthName(selectedMonth)} ${selectedYear}.`
             });
-            setTimeout(() => setNotification(null), 4000);
+            setTimeout(() => setNotification(null), 3000);
           }
           setVolumes(newVolumes);
         }
       } catch (err) {
         console.error(err);
       } finally {
+        setLoading(false);
         setPreviewLoading(false);
       }
     }
@@ -130,6 +163,12 @@ export default function OfficerDashboardPage() {
   // Run calculation preview as volumes change
   useEffect(() => {
     if (loading || cars.length === 0) return;
+
+    const isFuture = selectedYear > currentYear || (selectedYear === currentYear && selectedMonth > currentMonth);
+    if (isFuture) {
+      setPreview(null);
+      return;
+    }
 
     const timer = setTimeout(async () => {
       setPreviewLoading(true);
@@ -160,7 +199,7 @@ export default function OfficerDashboardPage() {
       } finally {
         setPreviewLoading(false);
       }
-    }, 300); // Debounce typing by 300ms
+    }, 300);
 
     return () => clearTimeout(timer);
   }, [volumes, selectedMonth, selectedYear, loading, cars]);
@@ -173,21 +212,7 @@ export default function OfficerDashboardPage() {
     }));
   };
 
-  const handleIncrement = (modelId: string) => {
-    setVolumes((prev) => ({
-      ...prev,
-      [modelId]: (prev[modelId] || 0) + 1
-    }));
-  };
-
-  const handleDecrement = (modelId: string) => {
-    setVolumes((prev) => ({
-      ...prev,
-      [modelId]: Math.max(0, (prev[modelId] || 0) - 1)
-    }));
-  };
-
-  const handleSubmit = async () => {
+  const handleSubmit = async (action: 'save_draft' | 'submit') => {
     setSubmitting(true);
     setNotification(null);
 
@@ -204,7 +229,8 @@ export default function OfficerDashboardPage() {
           month: selectedMonth,
           year: Number(selectedYear),
           sales: salesPayload,
-          previewOnly: false
+          previewOnly: false,
+          action
         })
       });
 
@@ -212,19 +238,24 @@ export default function OfficerDashboardPage() {
       if (res.ok) {
         setNotification({
           type: 'success',
-          message: `Successfully logged May sales performance! Total Incentive calculated: ₹${data.record.totalIncentive.toLocaleString('en-IN')}`
+          message: action === 'submit'
+            ? `Sales sheet submitted and locked permanently. Total incentive: ₹${data.record.totalIncentive.toLocaleString('en-IN')}`
+            : `Sales draft saved successfully.`
         });
+        if (action === 'submit') {
+          setIsLocked(true);
+        }
       } else {
         setNotification({
           type: 'error',
-          message: data.error || 'Failed to submit monthly sales record.'
+          message: data.error || 'Failed to save sales.'
         });
       }
     } catch (err) {
       console.error(err);
       setNotification({
         type: 'error',
-        message: 'Network error. Submission failed.'
+        message: 'Submission failed due to network error.'
       });
     } finally {
       setSubmitting(false);
@@ -241,17 +272,15 @@ export default function OfficerDashboardPage() {
     return months[monthStr] || monthStr;
   };
 
-  // GAP ANALYSER: Calculates units needed to hit the next tier rate
   const getNextTierGap = () => {
     if (!preview || slabs.length === 0) return null;
     const total = preview.totalCars;
     
-    // Find the next slab that starts higher than total
     const sorted = [...slabs].sort((a, b) => a.startCount - b.startCount);
     const nextSlab = sorted.find((s) => total < s.startCount);
 
     if (!nextSlab) {
-      return { completed: true, message: 'Top Incentive Tier Reached!' };
+      return { completed: true, message: 'Max slab rate unlocked.' };
     }
 
     const gap = nextSlab.startCount - total;
@@ -259,7 +288,7 @@ export default function OfficerDashboardPage() {
       completed: false,
       gap,
       nextRate: nextSlab.rate,
-      message: `Sell ${gap} more car${gap > 1 ? 's' : ''} to reach the ₹${nextSlab.rate}/car tier!`
+      message: `+${gap} units to unlock ₹${nextSlab.rate.toLocaleString('en-IN')}/car rate.`
     };
   };
 
@@ -267,35 +296,51 @@ export default function OfficerDashboardPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6 animate-pulse">
-        <div className="h-10 w-48 bg-gray-200 rounded"></div>
-        <div className="h-44 bg-gray-200 rounded-lg"></div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="h-96 bg-gray-200 rounded-lg"></div>
-          <div className="h-96 bg-gray-200 rounded-lg"></div>
-        </div>
+      <div className="flex h-64 flex-col items-center justify-center gap-3 text-xs font-medium text-neutral-400">
+        <div className="h-4 w-4 border-2 border-neutral-200 border-t-toyota-red rounded-full animate-spin" />
+        <span>Loading sales dashboard...</span>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
-      {/* Title banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-gray-200 pb-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-toyota-black">Sales Submission Portal</h1>
-          <p className="mt-0.5 text-xs sm:text-sm text-toyota-charcoal">
-            Log your vehicle volumes and view dynamic tiered incentive calculations in real time.
-          </p>
+    <div className="space-y-8 max-w-5xl mx-auto py-2">
+      {/* Title Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-6 border-b border-neutral-100 gap-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-neutral-900">Sales Worksheet</h1>
+            <p className="text-xs text-neutral-400 mt-1">Input monthly unit sales to automatically calculate incentives.</p>
+          </div>
+          {/* Dynamic Status Badge */}
+          <div className="shrink-0 self-center">
+            {isLocked ? (
+              <span className="inline-flex items-center gap-1 bg-red-50 text-toyota-red border border-red-100 px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider select-none">
+                <Lock className="h-3 w-3" /> Locked
+              </span>
+            ) : isFutureMonth ? (
+              <span className="inline-flex items-center gap-1 bg-neutral-100 text-neutral-500 border border-neutral-200/60 px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider select-none">
+                Blocked
+              </span>
+            ) : isPastMonth ? (
+              <span className="inline-flex items-center gap-1 bg-neutral-100 text-neutral-600 border border-neutral-200/60 px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider select-none">
+                Read-Only
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider select-none">
+                Draft
+              </span>
+            )}
+          </div>
         </div>
         
-        {/* Month Picker Selection Panel */}
-        <div className="bg-toyota-white p-3 rounded-lg border border-gray-200 shadow-sm flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-toyota-red" />
+        {/* Month Selector */}
+        <div className="flex items-center gap-1.5 bg-neutral-50 border border-neutral-200/60 px-3 py-1.5 rounded text-xs select-none">
+          <Calendar className="h-3.5 w-3.5 text-neutral-400" />
           <select
             value={selectedMonth}
             onChange={(e) => setSelectedMonth(e.target.value)}
-            className="rounded border border-gray-300 px-2 py-1 text-xs font-bold text-toyota-charcoal outline-none cursor-pointer bg-toyota-white"
+            className="font-semibold text-neutral-800 outline-none bg-transparent cursor-pointer py-0.5 px-1 pr-4 focus:ring-0 focus:shadow-none"
           >
             <option value="01">January</option>
             <option value="02">February</option>
@@ -310,10 +355,11 @@ export default function OfficerDashboardPage() {
             <option value="11">November</option>
             <option value="12">December</option>
           </select>
+          <span className="text-neutral-300 h-3 w-[1px]" />
           <select
             value={selectedYear}
             onChange={(e) => setSelectedYear(Number(e.target.value))}
-            className="rounded border border-gray-300 px-2 py-1 text-xs font-bold text-toyota-charcoal outline-none cursor-pointer bg-toyota-white"
+            className="font-semibold text-neutral-800 outline-none bg-transparent cursor-pointer py-0.5 px-1 focus:ring-0 focus:shadow-none"
           >
             <option value="2026">2026</option>
             <option value="2025">2025</option>
@@ -322,287 +368,318 @@ export default function OfficerDashboardPage() {
       </div>
 
       {notification && (
-        <div className={`p-4 rounded-md text-sm border flex items-center gap-2 ${
+        <div className={`p-4 border rounded-md transition-all ${
           notification.type === 'success'
-            ? 'bg-green-50 text-green-800 border-green-200'
-            : 'bg-red-50 text-toyota-red border-toyota-red/10'
+            ? 'bg-emerald-50/50 border-emerald-100 text-emerald-800'
+            : 'bg-rose-50/50 border-rose-100 text-toyota-red'
         }`}>
-          <Info className="h-5 w-5 shrink-0" />
-          <span className="font-semibold">{notification.message}</span>
+          <p className="text-xs font-semibold">{notification.message}</p>
         </div>
       )}
 
-      {/* TRACKER KPI GRID */}
+      {/* THREE SIMPLE STATS */}
       {preview && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          {/* 1. Cars Sold */}
-          <div className="bg-toyota-white p-4 sm:p-5 rounded-lg border border-gray-200 shadow-sm flex items-center justify-between">
-            <div>
-              <span className="block text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-toyota-charcoal">
-                Volume Sold
-              </span>
-              <span className="block mt-1 text-xl sm:text-2xl font-bold text-toyota-black whitespace-nowrap">
-                {preview.totalCars} Cars
-              </span>
-            </div>
-            <div className="p-2.5 bg-gray-100 rounded-lg text-toyota-charcoal shrink-0">
-              <Car className="h-5 w-5 text-toyota-dark-gray" />
-            </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <div className="bg-white p-6 border border-neutral-100 rounded-md">
+            <span className="block text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+              Total Units Sold
+            </span>
+            <span className="block text-2xl font-light tracking-tight text-neutral-900 mt-1">
+              {preview.totalCars} <span className="text-xs font-normal text-neutral-400">units</span>
+            </span>
           </div>
 
-          {/* 2. Calculated Incentive */}
-          <div className="bg-toyota-white p-4 sm:p-5 rounded-lg border border-gray-200 shadow-sm flex items-center justify-between">
-            <div>
-              <span className="block text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-toyota-charcoal">
-                Calculated Payout
-              </span>
-              <span className="block mt-1 text-xl sm:text-2xl font-bold text-toyota-red whitespace-nowrap">
-                ₹{preview.totalIncentive.toLocaleString('en-IN')}
-              </span>
-            </div>
-            <div className="p-2.5 bg-red-50 text-toyota-red rounded-lg shrink-0">
-              <Trophy className="h-5 w-5" />
-            </div>
+          <div className="bg-white p-6 border border-neutral-100 rounded-md">
+            <span className="block text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+              Calculated Rate
+            </span>
+            <span className="block text-2xl font-light tracking-tight text-neutral-900 mt-1">
+              ₹{preview.nominalRate.toLocaleString('en-IN')} <span className="text-xs font-normal text-neutral-400">/ unit</span>
+            </span>
           </div>
 
-          {/* 3. Current Tier Rate */}
-          <div className="bg-toyota-white p-4 sm:p-5 rounded-lg border border-gray-200 shadow-sm flex items-center justify-between">
-            <div>
-              <span className="block text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-toyota-charcoal">
-                Highest Rate Reached
-              </span>
-              <span className="block mt-1 text-xl sm:text-2xl font-bold text-toyota-black whitespace-nowrap">
-                ₹{preview.nominalRate.toLocaleString('en-IN')}/car
-              </span>
-            </div>
-            <div className="p-2.5 bg-gray-100 rounded-lg text-toyota-charcoal shrink-0">
-              <Sparkles className="h-5 w-5 text-toyota-dark-gray" />
-            </div>
-          </div>
-
-          {/* 4. Gap Analyser */}
-          <div className={`p-4 sm:p-5 rounded-lg border shadow-sm flex items-center justify-between ${
-            gapInfo?.completed
-              ? 'bg-green-50 border-green-200 text-green-800'
-              : 'bg-amber-50 border-amber-200 text-amber-900'
-          }`}>
-            <div>
-              <span className="block text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-toyota-charcoal">
-                Gap Analysis
-              </span>
-              <span className="block mt-1 text-xs sm:text-sm font-bold leading-tight">
-                {gapInfo?.message}
-              </span>
-            </div>
-            <div className={`p-2.5 rounded-lg shrink-0 ${gapInfo?.completed ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
-              <Trophy className="h-5 w-5" />
-            </div>
+          <div className="bg-white p-6 border border-neutral-100 rounded-md">
+            <span className="block text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+              {isLocked ? 'Final Incentive' : 'Estimated Incentive'}
+            </span>
+            <span className="block text-2xl font-semibold tracking-tight text-toyota-red mt-1">
+              ₹{preview.totalIncentive.toLocaleString('en-IN')}
+            </span>
           </div>
         </div>
       )}
 
-      {/* SEGMENTED PROGRESS METERS */}
-      {preview && slabs.length > 0 && (
-        <div className="bg-toyota-white p-6 border border-gray-200 rounded-lg shadow-sm">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-toyota-charcoal mb-4 flex items-center gap-1">
-            <Trophy className="h-4 w-4 text-toyota-red" />
-            Volume Incentive Slab Unlocks
-          </h3>
-          <div className="space-y-4">
-            <div className="flex w-full bg-toyota-light-gray h-5 rounded-full overflow-hidden border border-gray-200">
-              {slabs.map((slab, i) => {
-                const start = slab.startCount;
-                const end = slab.endCount !== null ? slab.endCount : Math.max(preview.totalCars + 2, start + 2);
-                
-                // Calculate percentage width of this segment relative to the total scale
-                const totalMax = slabs[slabs.length - 1].endCount !== null 
-                  ? slabs[slabs.length - 1].endCount || 10
-                  : Math.max(preview.totalCars + 3, slabs[slabs.length - 1].startCount + 2);
-                
-                const segmentWidth = ((end - (start - 1)) / totalMax) * 100;
-                
-                // Check how much of this segment is filled by totalCars
-                const filledCars = Math.max(0, Math.min(end, preview.totalCars) - (start - 1));
-                const filledPercentage = (filledCars / (end - (start - 1))) * 100;
-
-                return (
-                  <div
-                    key={slab._id}
-                    className="h-full border-r border-gray-300/40 relative flex"
-                    style={{ width: `${segmentWidth}%` }}
-                  >
-                    <div
-                      className="bg-toyota-red h-full transition-all duration-300"
-                      style={{ width: `${filledPercentage}%` }}
-                    ></div>
-                  </div>
-                );
-              })}
-            </div>
-            
-            <div className="grid grid-cols-3 text-center gap-2">
-              {slabs.map((slab, i) => {
-                const isActive = preview.totalCars >= slab.startCount && (slab.endCount === null || preview.totalCars <= slab.endCount);
-                const isPassed = preview.totalCars > (slab.endCount || Infinity);
-                return (
-                  <div key={slab._id} className="space-y-1">
-                    <span className={`block text-xs font-bold ${isActive ? 'text-toyota-red' : isPassed ? 'text-toyota-black' : 'text-toyota-charcoal'}`}>
-                      Tier {i + 1} ({slab.startCount}{slab.endCount ? `-${slab.endCount}` : '+'} Cars)
+      {/* COMPACT SLAB GUIDE ROADMAP */}
+      {slabs.length > 0 && (
+        <div className="bg-white p-6 rounded-md border border-neutral-100">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Incentive Tiers</h3>
+            {gapInfo && !gapInfo.completed && (
+              <span className="text-xs text-toyota-red font-medium">
+                {gapInfo.message}
+              </span>
+            )}
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {slabs.map((slab) => {
+              const isActive = preview && preview.totalCars >= slab.startCount && (slab.endCount === null || preview.totalCars <= slab.endCount);
+              return (
+                <div
+                  key={slab._id}
+                  className={`px-4 py-3 rounded border transition-all ${
+                    isActive
+                      ? 'bg-toyota-red/5 border-toyota-red/30'
+                      : 'bg-neutral-50/50 border-neutral-100'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className={`text-[10px] font-medium uppercase tracking-wider ${isActive ? 'text-toyota-red' : 'text-neutral-400'}`}>
+                      {slab.endCount ? `${slab.startCount}–${slab.endCount} units` : `${slab.startCount}+ units`}
                     </span>
-                    <span className="block text-[11px] font-semibold text-toyota-charcoal">
-                      ₹{slab.rate.toLocaleString('en-IN')}/car
-                    </span>
+                    {isActive && (
+                      <span className="h-1.5 w-1.5 rounded-full bg-toyota-red animate-pulse" />
+                    )}
                   </div>
-                );
-              })}
-            </div>
+                  <div className={`text-base font-semibold mt-1 ${isActive ? 'text-toyota-red' : 'text-neutral-800'}`}>
+                    ₹{slab.rate.toLocaleString('en-IN')}
+                    <span className="text-[10px] font-normal text-neutral-400 block sm:inline sm:ml-0.5">/unit</span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
 
-      {/* CORE LOGGING SHEET */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      {/* ENTRY SHEET & INCENTIVE DETAILS ROW */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
         
-        {/* Forms block - Log sales */}
-        <div className="bg-toyota-white p-6 rounded-lg border border-gray-200 shadow-sm space-y-6">
-          <div className="border-b border-gray-150 pb-3">
-            <h3 className="text-base font-bold uppercase tracking-wider text-toyota-black">
-              Vehicle Volume Ledger
-            </h3>
-            <p className="text-xs text-toyota-charcoal mt-1">
-              Enter your monthly quantities sold per active model line.
-            </p>
+        {/* Sales Ledger Sheet */}
+        <div className="bg-white p-8 rounded-md border border-neutral-100 space-y-6">
+          <div className="border-b border-neutral-100 pb-4">
+            <h3 className="text-base font-semibold text-neutral-900 tracking-tight">Sales Entry</h3>
+            <p className="text-xs text-neutral-400 mt-1">Record the units delivered for each Toyota model below.</p>
           </div>
 
           {cars.length === 0 ? (
-            <div className="p-8 text-center text-toyota-charcoal text-sm font-semibold">
-              No active vehicle models registered in the database inventory. Contact your Administrator.
-            </div>
+            <div className="text-center text-neutral-400 text-xs py-8">No active vehicle models found.</div>
           ) : (
-            <div className="space-y-4">
-              {cars.map((car) => {
-                const val = volumes[car._id] || 0;
-                return (
-                  <div
-                    key={car._id}
-                    className="flex flex-col sm:flex-row gap-3 sm:items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-toyota-light-gray/20 transition-colors"
-                  >
-                    <div>
-                      <span className="block font-bold text-sm text-toyota-black">{car.modelName}</span>
-                      <span className="block text-[11px] font-semibold text-toyota-charcoal">
-                        {car.baseSuffix} Trim · {car.variant}
-                      </span>
+            <div className="space-y-6">
+              <div className="divide-y divide-neutral-100">
+                {cars.map((car) => {
+                  const val = volumes[car._id] || 0;
+                  return (
+                    <div key={car._id} className="py-4 flex items-center justify-between first:pt-0 last:pb-0 gap-6">
+                      <div className="space-y-0.5">
+                        <span className="block font-semibold text-sm text-neutral-900 tracking-tight">{car.modelName}</span>
+                        <span className="block text-[11px] text-neutral-400">{car.baseSuffix} · {car.variant}</span>
+                      </div>
+                      {isEditable ? (
+                        <div className="relative flex items-center">
+                          <input
+                            type="number"
+                            min="0"
+                            value={val || ''}
+                            onChange={(e) => handleQtyChange(car._id, e.target.value)}
+                            className="w-24 bg-white border border-neutral-200 focus:border-toyota-red rounded px-3 py-1.5 text-right font-semibold text-sm text-neutral-800 outline-none transition-all"
+                            placeholder="0"
+                          />
+                          <span className="text-[10px] font-medium text-neutral-400 ml-2 uppercase">units</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1.5 bg-neutral-50 px-3 py-1.5 rounded border border-neutral-100">
+                          <span className="text-sm font-bold text-neutral-800">{val}</span>
+                          <span className="text-[10px] font-medium text-neutral-400 uppercase">units</span>
+                        </div>
+                      )}
                     </div>
+                  );
+                })}
+              </div>
 
-                    <div className="flex items-center gap-2 self-start sm:self-center">
-                      <button
-                        type="button"
-                        onClick={() => handleDecrement(car._id)}
-                        className="h-8 w-8 rounded border border-gray-300 flex items-center justify-center text-md font-black hover:bg-gray-100 cursor-pointer select-none"
-                      >
-                        -
-                      </button>
-                      <input
-                        type="number"
-                        min="0"
-                        value={val || ''}
-                        onChange={(e) => handleQtyChange(car._id, e.target.value)}
-                        className="w-16 rounded border border-gray-300 text-center py-1 font-bold text-sm outline-none"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleIncrement(car._id)}
-                        className="h-8 w-8 rounded border border-gray-300 flex items-center justify-center text-md font-black hover:bg-gray-100 cursor-pointer select-none"
-                      >
-                        +
-                      </button>
-                    </div>
+              <div className="pt-6 border-t border-neutral-100 flex flex-wrap gap-3 justify-end">
+                {isEditable ? (
+                  <>
+                    <button
+                      onClick={() => handleSubmit('save_draft')}
+                      disabled={submitting || previewLoading}
+                      className="px-4 py-2 bg-white hover:bg-neutral-50 text-neutral-700 border border-neutral-200 rounded text-xs font-semibold uppercase tracking-wider transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer"
+                    >
+                      <Save className="h-3.5 w-3.5 text-neutral-500" />
+                      Save Draft
+                    </button>
+                    <button
+                      onClick={() => setShowConfirmModal(true)}
+                      disabled={submitting || previewLoading}
+                      className="px-4 py-2 bg-toyota-red hover:bg-red-700 text-white rounded text-xs font-semibold uppercase tracking-wider transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer shadow-sm"
+                    >
+                      <CheckCircle className="h-3.5 w-3.5" />
+                      Submit & Lock
+                    </button>
+                  </>
+                ) : (
+                  <div className="p-3.5 bg-neutral-50 border border-neutral-100 rounded text-center w-full flex items-center justify-center gap-2">
+                    {isLocked ? (
+                      <>
+                        <Lock className="h-3.5 w-3.5 text-toyota-red animate-pulse" />
+                        <span className="text-xs text-neutral-600 font-medium">
+                          Calculations are frozen. Submission has been finalized and locked.
+                        </span>
+                      </>
+                    ) : isFutureMonth ? (
+                      <>
+                        <Calendar className="h-3.5 w-3.5 text-neutral-400" />
+                        <span className="text-xs text-neutral-500 font-medium">
+                          Future months are locked and cannot be edited.
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <ShieldAlert className="h-3.5 w-3.5 text-neutral-400" />
+                        <span className="text-xs text-neutral-500 font-medium">
+                          Past months are archived in read-only audit mode.
+                        </span>
+                      </>
+                    )}
                   </div>
-                );
-              })}
-              
-              <div className="pt-4 border-t border-gray-150 flex justify-end">
-                <button
-                  onClick={handleSubmit}
-                  disabled={submitting || previewLoading}
-                  className="flex items-center gap-1.5 bg-toyota-red hover:bg-red-700 text-toyota-white px-5 py-3 rounded text-xs font-bold uppercase transition-colors tracking-wider shadow cursor-pointer disabled:opacity-50"
-                >
-                  <Save className="h-4 w-4" />
-                  {submitting ? 'Saving Performance...' : 'Submit Monthly Sales'}
-                </button>
+                )}
               </div>
             </div>
           )}
         </div>
 
-        {/* Live Calculation Preview Breakdown drawer */}
-        <div className="bg-toyota-white p-6 rounded-lg border border-gray-200 shadow-sm space-y-6">
-          <div className="border-b border-gray-150 pb-3">
-            <h3 className="text-base font-bold uppercase tracking-wider text-toyota-black flex items-center gap-1">
-              <Info className="h-4 w-4 text-toyota-red shrink-0" />
-              Live Calculations Breakdown
-            </h3>
-            <p className="text-xs text-toyota-charcoal mt-1">
-              Step-by-step mathematical breakdown of estimated incentives.
-            </p>
+        {/* Live Calculation Panel */}
+        <div className="bg-white p-8 rounded-md border border-neutral-100 flex flex-col justify-between min-h-[400px]">
+          <div className="space-y-6">
+            <div className="border-b border-neutral-100 pb-4">
+              <h3 className="text-base font-semibold text-neutral-900 tracking-tight">Calculation Summary</h3>
+              <p className="text-xs text-neutral-400 mt-1">Real-time incentive audit based on active slabs.</p>
+            </div>
+
+            {previewLoading ? (
+              <div className="h-48 flex flex-col items-center justify-center text-xs text-neutral-400 gap-2">
+                <div className="h-4 w-4 border-2 border-neutral-200 border-t-toyota-red rounded-full animate-spin" />
+                <span>Recalculating details...</span>
+              </div>
+            ) : !preview || preview.totalCars === 0 ? (
+              <div className="h-48 flex flex-col items-center justify-center text-center p-6 border border-dashed border-neutral-100 rounded-lg">
+                <span className="text-xs font-semibold text-neutral-400">No units entered</span>
+                <span className="text-[11px] text-neutral-400 mt-1.5 max-w-[220px] leading-relaxed">
+                  Input sold quantities in the entry sheet to preview calculation breakdowns.
+                </span>
+              </div>
+            ) : (
+              <div className="space-y-6 animate-in fade-in duration-200">
+                {/* Detailed breakdown list */}
+                <div className="space-y-3">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400 block">Slab Breakdown</span>
+                  <div className="border border-neutral-100 rounded bg-neutral-50/30 divide-y divide-neutral-100 overflow-hidden">
+                    {preview.breakdown && preview.breakdown.length > 0 ? (
+                      preview.breakdown.map((item, idx) => (
+                        <div key={idx} className="flex justify-between items-center px-4 py-3 text-xs">
+                          <div>
+                            <span className="font-semibold text-neutral-800 block">{item.slabRange} Units</span>
+                            <span className="text-[10px] text-neutral-400 mt-0.5">{item.count} units sold at this rate</span>
+                          </div>
+                          <div className="text-right">
+                            <span className="font-semibold text-neutral-800 block">₹{item.subtotal.toLocaleString('en-IN')}</span>
+                            <span className="text-[10px] text-neutral-400 mt-0.5">₹{item.rate.toLocaleString('en-IN')}/unit</span>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="flex justify-between items-center px-4 py-3 text-xs">
+                        <div>
+                          <span className="font-semibold text-neutral-800 block">Standard Rate</span>
+                          <span className="text-[10px] text-neutral-400 mt-0.5">{preview.totalCars} units sold</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="font-semibold text-neutral-800 block">₹{preview.totalIncentive.toLocaleString('en-IN')}</span>
+                          <span className="text-[10px] text-neutral-400 mt-0.5">₹{preview.nominalRate.toLocaleString('en-IN')}/unit</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Final Receipt Total */}
+                <div className="bg-neutral-50 border border-neutral-100 rounded p-4 space-y-2.5">
+                  <div className="flex justify-between text-xs text-neutral-500 font-medium">
+                    <span>Gross Sales Volume</span>
+                    <span className="font-semibold text-neutral-700">{preview.totalCars} units</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-neutral-500 font-medium">
+                    <span>Final Slab Rate</span>
+                    <span className="font-semibold text-neutral-700">₹{preview.nominalRate.toLocaleString('en-IN')}/unit</span>
+                  </div>
+                  <div className="h-[1px] bg-neutral-200 my-1" />
+                  <div className="flex justify-between items-baseline pt-1">
+                    <span className="text-xs font-semibold text-neutral-800">Total Incentive Payout</span>
+                    <span className="text-xl font-bold text-toyota-red">
+                      ₹{preview.totalIncentive.toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
-          {previewLoading ? (
-            <div className="h-48 flex flex-col items-center justify-center gap-2">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-toyota-red border-t-transparent"></div>
-              <span className="text-xs text-toyota-charcoal font-semibold">Recalculating Preview...</span>
-            </div>
-          ) : !preview || preview.totalCars === 0 ? (
-            <div className="p-12 text-center text-toyota-charcoal text-sm">
-              Adjust volumes in the vehicle ledger to trigger the real-time calculations preview.
-            </div>
-          ) : (
-            <div className="space-y-6">
-              
-              {/* Calc details */}
-              <div className="bg-toyota-light-gray p-4 rounded-lg border border-gray-200">
-                <span className="block text-[10px] font-bold uppercase tracking-wider text-toyota-charcoal mb-2">
-                  Calculation Method: Flat Rate (All Cars)
+          {/* Info Note block at the bottom */}
+          {preview && preview.totalCars > 0 && (
+            <div className="text-[11px] text-neutral-500 leading-relaxed p-3.5 bg-neutral-50 border border-neutral-100 rounded mt-6">
+              <span className="font-semibold text-neutral-800 uppercase tracking-wider block text-[9px] mb-1">Incentive Audit Protocol</span>
+              {isLocked ? (
+                <span className="text-toyota-red font-medium">
+                  ★ Frozen payout record. This month is permanently locked in the ledger; administrative slab changes will not affect this payout.
                 </span>
-                
-                <div className="space-y-2">
-                  {preview.breakdown.map((item, idx) => (
-                    <div key={idx} className="flex justify-between text-xs font-semibold text-toyota-black py-1.5 border-b border-gray-200/50 last:border-b-0">
-                      <span>
-                        Tier Bracket {item.slabRange} ({item.count} Car{item.count > 1 ? 's' : ''})
-                      </span>
-                      <span>
-                        {item.count} * ₹{item.rate.toLocaleString('en-IN')} = ₹{item.subtotal.toLocaleString('en-IN')}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex justify-between text-xs font-bold text-toyota-black pt-3 mt-1 border-t border-toyota-charcoal/30">
-                  <span>TOTAL ESTIMATED PAYOUT</span>
-                  <span className="text-toyota-red text-sm font-black">
-                    ₹{preview.totalIncentive.toLocaleString('en-IN')}
-                  </span>
-                </div>
-              </div>
-
-              {/* Explanatory notes */}
-              <div className="text-[11px] text-toyota-charcoal space-y-2 border-t border-gray-150 pt-4">
-                <h4 className="font-bold uppercase tracking-wider text-toyota-black flex items-center gap-1">
-                  <HelpCircle className="h-3.5 w-3.5" />
-                  Understanding the math
-                </h4>
-                <p>
-                  <span className="font-semibold text-toyota-black">Flat Rate Method: </span>
-                  You get the highest rate you reach applied to <span className="font-bold text-toyota-black">all</span> the cars you sold this month. For example, if you sell 9 cars, you get ₹3,500 for every single one of them.
-                </p>
-              </div>
-
+              ) : (
+                <span>
+                  Payout is computed live using the highest unlocked slab applied flat to all sold units. Saving or submitting finalizes these values.
+                </span>
+              )}
             </div>
           )}
         </div>
 
       </div>
+
+      {/* Simple Custom Confirmation Modal */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-900/60 backdrop-blur-xs">
+          <div className="bg-white max-w-sm w-full p-6 shadow-xl border border-neutral-100 rounded-md animate-in zoom-in-95 duration-150">
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-neutral-900">
+                  Submit Monthly Sheet
+                </h3>
+                <p className="text-xs text-neutral-500 mt-2.5 leading-relaxed">
+                  This will finalize and lock your sales worksheet for <strong className="text-neutral-800 font-semibold">{getMonthName(selectedMonth)} {selectedYear}</strong>. Once submitted, you cannot make further edits.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-neutral-100">
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmModal(false)}
+                  className="px-4 py-2 border border-neutral-200 hover:bg-neutral-50 text-xs font-semibold uppercase tracking-wide text-neutral-600 rounded bg-white cursor-pointer transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowConfirmModal(false);
+                    handleSubmit('submit');
+                  }}
+                  className="px-4 py-2 bg-toyota-red hover:bg-red-700 text-white text-xs font-semibold uppercase tracking-wider rounded cursor-pointer transition-colors shadow-sm"
+                >
+                  Submit & Lock
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
