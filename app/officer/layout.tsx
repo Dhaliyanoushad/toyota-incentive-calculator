@@ -42,10 +42,11 @@ export default function OfficerLayout({ children }: { children: React.ReactNode 
   }, [router]);
 
   const handleLogout = async () => {
+    if (!confirm('Are you sure you want to logout?')) return;
     try {
       const res = await fetch('/api/auth/logout', { method: 'POST' });
       if (res.ok) {
-        router.push('/login/officer');
+        router.push('/login');
         router.refresh();
       }
     } catch (err) {

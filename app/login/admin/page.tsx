@@ -10,6 +10,7 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,15 +88,24 @@ export default function AdminLoginPage() {
               <label htmlFor="password" className="block text-sm font-semibold text-toyota-charcoal">
                 Password
               </label>
-              <input
-                id="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-gray-300 py-2.5 px-3 text-toyota-black placeholder:text-gray-400 focus:border-toyota-red focus:ring-1 focus:ring-toyota-red outline-none transition-all"
-                placeholder="Password"
-              />
+              <div className="relative mt-1">
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="block w-full rounded-md border border-gray-300 py-2.5 pl-3 pr-16 text-toyota-black placeholder:text-gray-400 focus:border-toyota-red focus:ring-1 focus:ring-toyota-red outline-none transition-all"
+                  placeholder="Password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-xs font-bold uppercase tracking-wider text-toyota-charcoal hover:text-toyota-red transition-colors cursor-pointer select-none"
+                >
+                  {showPassword ? 'Hide' : 'Show'}
+                </button>
+              </div>
             </div>
 
             <button
