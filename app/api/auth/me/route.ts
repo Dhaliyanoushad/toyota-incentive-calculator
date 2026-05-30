@@ -18,15 +18,21 @@ export async function GET() {
     let decoded: any;
     try {
       decoded = jwt.verify(token, JWT_SECRET);
-    } catch (err) {
-      return NextResponse.json({ user: null }, { status: 200 });
+    } catch {
+      // Clear cookie on the NextResponse object (fully supported in GET route handlers)
+      const response = NextResponse.json({ user: null }, { status: 200 });
+      response.cookies.delete('token');
+      return response;
     }
 
     await dbConnect();
     const user = await User.findById(decoded.userId).select('-password');
     
     if (!user) {
-      return NextResponse.json({ user: null }, { status: 200 });
+      // Clear cookie on the NextResponse object (fully supported in GET route handlers)
+      const response = NextResponse.json({ user: null }, { status: 200 });
+      response.cookies.delete('token');
+      return response;
     }
 
     return NextResponse.json({

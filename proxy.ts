@@ -66,20 +66,29 @@ export function proxy(request: NextRequest) {
         }
       }
 
+      // Verify role is valid to prevent redirect loops on invalid/missing roles
+      const role = payload.role;
+      if (role !== 'admin' && role !== 'officer') {
+        const redirectTarget = getRedirectTarget(pathname);
+        const response = NextResponse.redirect(new URL(redirectTarget, request.url));
+        response.cookies.delete('token');
+        return response;
+      }
+
       // Check Role-Based Access Control (RBAC)
       if (isLoginPath || pathname === '/') {
-        if (payload.role === 'admin') {
+        if (role === 'admin') {
           return NextResponse.redirect(new URL('/admin/dashboard', request.url));
         } else {
           return NextResponse.redirect(new URL('/officer/dashboard', request.url));
         }
       }
 
-      if (isAdminPath && payload.role !== 'admin') {
+      if (isAdminPath && role !== 'admin') {
         return NextResponse.redirect(new URL('/officer/dashboard', request.url));
       }
 
-      if (isOfficerPath && payload.role !== 'officer') {
+      if (isOfficerPath && role !== 'officer') {
         return NextResponse.redirect(new URL('/admin/dashboard', request.url));
       }
 
