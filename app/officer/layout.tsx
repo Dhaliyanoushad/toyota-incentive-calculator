@@ -28,14 +28,14 @@ export default function OfficerLayout({ children }: { children: React.ReactNode 
           if (data.user && data.user.role === 'officer') {
             setUser(data.user);
           } else {
-            router.push('/login');
+            router.push('/login/officer');
           }
         } else {
-          router.push('/login');
+          router.push('/login/officer');
         }
       } catch (err) {
         console.error(err);
-        router.push('/login');
+        router.push('/login/officer');
       }
     }
     checkSession();
@@ -45,7 +45,7 @@ export default function OfficerLayout({ children }: { children: React.ReactNode 
     try {
       const res = await fetch('/api/auth/logout', { method: 'POST' });
       if (res.ok) {
-        router.push('/login');
+        router.push('/login/officer');
         router.refresh();
       }
     } catch (err) {

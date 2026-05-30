@@ -30,14 +30,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           if (data.user && data.user.role === 'admin') {
             setUser(data.user);
           } else {
-            router.push('/login');
+            router.push('/login/admin');
           }
         } else {
-          router.push('/login');
+          router.push('/login/admin');
         }
       } catch (err) {
         console.error(err);
-        router.push('/login');
+        router.push('/login/admin');
       }
     }
     checkSession();
@@ -47,7 +47,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     try {
       const res = await fetch('/api/auth/logout', { method: 'POST' });
       if (res.ok) {
-        router.push('/login');
+        router.push('/login/admin');
         router.refresh();
       }
     } catch (err) {

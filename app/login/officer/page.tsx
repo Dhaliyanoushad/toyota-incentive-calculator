@@ -79,7 +79,7 @@ export default function OfficerLoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="mt-1 block w-full rounded-md border border-gray-300 py-2.5 px-3 text-toyota-black placeholder:text-gray-400 focus:border-toyota-red focus:ring-1 focus:ring-toyota-red outline-none transition-all"
-                placeholder="officer@toyota.in"
+                placeholder="sales@toyota.in"
               />
             </div>
 

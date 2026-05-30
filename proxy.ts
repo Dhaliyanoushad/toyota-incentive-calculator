@@ -1,6 +1,16 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+function getRedirectTarget(pathname: string): string {
+  if (pathname.startsWith('/admin')) {
+    return '/login/admin';
+  }
+  if (pathname.startsWith('/officer')) {
+    return '/login/officer';
+  }
+  return '/';
+}
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -12,7 +22,12 @@ export function proxy(request: NextRequest) {
   const isOfficerPath = pathname.startsWith('/officer');
   const isLoginPath = pathname.startsWith('/login');
 
-  // 3. Handle route checks
+  // 3. Redirect /login parent page to / if logged out
+  if (!token && (pathname === '/login' || pathname === '/login/')) {
+    return NextResponse.redirect(new URL('/', request.url));
+  }
+
+  // 4. Handle route checks
   if (token) {
     try {
       // Decode JWT payload (second part of the JWT) without native crypto (edge runtime safe)
@@ -37,10 +52,11 @@ export function proxy(request: NextRequest) {
 
       if (isExpired) {
         // Clear expired token. 
-        // Redirect to home if they are trying to access a protected page.
+        // Redirect to respective login if they are trying to access a protected page.
         // Otherwise, allow them to view the public page and clear the cookie.
         if (isAdminPath || isOfficerPath) {
-          const response = NextResponse.redirect(new URL('/', request.url));
+          const redirectTarget = getRedirectTarget(pathname);
+          const response = NextResponse.redirect(new URL(redirectTarget, request.url));
           response.cookies.delete('token');
           return response;
         } else {
@@ -70,10 +86,11 @@ export function proxy(request: NextRequest) {
     } catch (e) {
       console.error('Middleware decode error:', e);
       // Clear invalid token.
-      // Redirect to home if they are trying to access a protected page.
+      // Redirect to respective login if they are trying to access a protected page.
       // Otherwise, allow them to view the public page and clear the cookie.
       if (isAdminPath || isOfficerPath) {
-        const response = NextResponse.redirect(new URL('/', request.url));
+        const redirectTarget = getRedirectTarget(pathname);
+        const response = NextResponse.redirect(new URL(redirectTarget, request.url));
         response.cookies.delete('token');
         return response;
       } else {
@@ -85,7 +102,8 @@ export function proxy(request: NextRequest) {
   } else {
     // If NO token, prevent accessing protected pages
     if (isAdminPath || isOfficerPath) {
-      return NextResponse.redirect(new URL('/', request.url));
+      const redirectTarget = getRedirectTarget(pathname);
+      return NextResponse.redirect(new URL(redirectTarget, request.url));
     }
   }
 
