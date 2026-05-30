@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function OfficerLoginPage() {
   const router = useRouter();
@@ -101,9 +102,14 @@ export default function OfficerLoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-xs font-bold uppercase tracking-wider text-toyota-charcoal hover:text-toyota-red transition-colors cursor-pointer select-none"
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-toyota-charcoal hover:text-toyota-red transition-colors cursor-pointer select-none"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
-                  {showPassword ? 'Hide' : 'Show'}
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
                 </button>
               </div>
             </div>
