@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Calendar, Save, CheckCircle, Lock, ShieldAlert, FileClock } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Calendar, Save, CheckCircle, Lock, ShieldAlert, FileClock, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 
 interface CarModel {
   _id: string;
@@ -39,6 +39,23 @@ export default function OfficerDashboardPage() {
   // Selector state
   const [selectedMonth, setSelectedMonth] = useState('05');
   const [selectedYear, setSelectedYear] = useState(2026);
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const pickerRef = useRef<HTMLDivElement>(null);
+
+  // Click outside to close custom period picker
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (pickerRef.current && !pickerRef.current.contains(event.target as Node)) {
+        setIsPickerOpen(false);
+      }
+    }
+    if (isPickerOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isPickerOpen]);
 
   // Locked state
   const [isLocked, setIsLocked] = useState(false);
@@ -335,35 +352,89 @@ export default function OfficerDashboardPage() {
         </div>
         
         {/* Month Selector */}
-        <div className="flex items-center gap-1.5 bg-neutral-50 border border-neutral-200/60 px-3 py-1.5 rounded text-xs select-none">
-          <Calendar className="h-3.5 w-3.5 text-neutral-400" />
-          <select
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(e.target.value)}
-            className="font-semibold text-neutral-800 outline-none bg-transparent cursor-pointer py-0.5 px-1 pr-4 focus:ring-0 focus:shadow-none"
+        <div ref={pickerRef} className="relative select-none z-40">
+          <button
+            type="button"
+            onClick={() => setIsPickerOpen(!isPickerOpen)}
+            className="flex items-center gap-2 bg-neutral-50 hover:bg-neutral-100/70 border border-neutral-200/60 px-3.5 py-1.5 rounded text-xs font-semibold text-neutral-800 transition-all cursor-pointer shadow-xs select-none focus:outline-none"
           >
-            <option value="01">January</option>
-            <option value="02">February</option>
-            <option value="03">March</option>
-            <option value="04">April</option>
-            <option value="05">May</option>
-            <option value="06">June</option>
-            <option value="07">July</option>
-            <option value="08">August</option>
-            <option value="09">September</option>
-            <option value="10">October</option>
-            <option value="11">November</option>
-            <option value="12">December</option>
-          </select>
-          <span className="text-neutral-300 h-3 w-[1px]" />
-          <select
-            value={selectedYear}
-            onChange={(e) => setSelectedYear(Number(e.target.value))}
-            className="font-semibold text-neutral-800 outline-none bg-transparent cursor-pointer py-0.5 px-1 focus:ring-0 focus:shadow-none"
-          >
-            <option value="2026">2026</option>
-            <option value="2025">2025</option>
-          </select>
+            <Calendar className="h-3.5 w-3.5 text-toyota-red shrink-0" />
+            <span>{getMonthName(selectedMonth)} {selectedYear}</span>
+            <ChevronDown className={`h-3.5 w-3.5 text-neutral-400 shrink-0 transition-transform duration-200 ${isPickerOpen ? 'rotate-180 text-toyota-red' : ''}`} />
+          </button>
+
+          {isPickerOpen && (
+            <div className="absolute right-0 top-full mt-2 w-64 bg-white/95 backdrop-blur-md border border-neutral-100 rounded-lg shadow-xl p-4 animate-in fade-in slide-in-from-top-2 duration-150">
+              {/* Year Navigation */}
+              <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
+                <button
+                  type="button"
+                  onClick={() => setSelectedYear((y) => Math.max(2025, y - 1))}
+                  disabled={selectedYear <= 2025}
+                  className="p-1 rounded-full text-neutral-400 hover:text-toyota-red hover:bg-neutral-50 transition-colors cursor-pointer active:scale-95 disabled:opacity-30 disabled:pointer-events-none"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <span className="text-xs font-bold text-neutral-800 tracking-tight select-none">
+                  {selectedYear}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedYear((y) => Math.min(2027, y + 1))}
+                  disabled={selectedYear >= 2027}
+                  className="p-1 rounded-full text-neutral-400 hover:text-toyota-red hover:bg-neutral-50 transition-colors cursor-pointer active:scale-95 disabled:opacity-30 disabled:pointer-events-none"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+
+              {/* Month Grid */}
+              <div className="grid grid-cols-3 gap-1.5 pt-3">
+                {[
+                  { code: '01', name: 'Jan' },
+                  { code: '02', name: 'Feb' },
+                  { code: '03', name: 'Mar' },
+                  { code: '04', name: 'Apr' },
+                  { code: '05', name: 'May' },
+                  { code: '06', name: 'Jun' },
+                  { code: '07', name: 'Jul' },
+                  { code: '08', name: 'Aug' },
+                  { code: '09', name: 'Sep' },
+                  { code: '10', name: 'Oct' },
+                  { code: '11', name: 'Nov' },
+                  { code: '12', name: 'Dec' },
+                ].map((m) => {
+                  const isSelected = selectedMonth === m.code;
+                  const isCurrent = m.code === currentMonth && selectedYear === currentYear;
+
+                  return (
+                    <button
+                      key={m.code}
+                      type="button"
+                      onClick={() => {
+                        setSelectedMonth(m.code);
+                        setIsPickerOpen(false);
+                      }}
+                      className={`relative py-2 text-[11px] font-semibold rounded transition-all cursor-pointer text-center select-none active:scale-95 ${
+                        isSelected
+                          ? 'bg-toyota-red text-white shadow-sm shadow-toyota-red/10'
+                          : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900'
+                      }`}
+                    >
+                      {m.name}
+                      {isCurrent && (
+                        <span
+                          className={`absolute bottom-1 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full ${
+                            isSelected ? 'bg-white' : 'bg-toyota-red'
+                          }`}
+                        />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

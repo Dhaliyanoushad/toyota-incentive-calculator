@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Search, Filter, Download, Calendar, Car, Award, ChevronDown, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Search, Filter, Download, Calendar, Car, Award, ChevronDown, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface SalesRecord {
   _id: string;
@@ -31,6 +31,28 @@ export default function AdminSalesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [monthFilter, setMonthFilter] = useState('');
   const [yearFilter, setYearFilter] = useState('');
+
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const filterRef = useRef<HTMLDivElement>(null);
+
+  // Click outside to close custom period filter
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
+        setIsFilterOpen(false);
+      }
+    }
+    if (isFilterOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isFilterOpen]);
+
+  const now = new Date();
+  const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
+  const currentYear = now.getFullYear();
   
   // Expanded sales breakdown item ID tracking
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -182,46 +204,149 @@ export default function AdminSalesPage() {
           />
         </div>
 
-        {/* Month Filter */}
-        <div className="relative">
+        {/* Custom Accounting Period Filter */}
+        <div ref={filterRef} className="relative sm:col-span-2 select-none z-40">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <Calendar className="h-4 w-4 text-neutral-400" />
+            <Calendar className="h-4 w-4 text-toyota-red" />
           </div>
-          <select
-            value={monthFilter}
-            onChange={(e) => setMonthFilter(e.target.value)}
-            className="w-full rounded border border-neutral-200 focus:border-toyota-red py-2 pl-9 pr-3 text-xs outline-none font-semibold text-neutral-600 bg-white cursor-pointer transition-colors"
+          <button
+            type="button"
+            onClick={() => setIsFilterOpen(!isFilterOpen)}
+            className="w-full h-full rounded border border-neutral-200 hover:border-neutral-300 focus:border-toyota-red py-2 pl-9 pr-10 text-xs outline-none font-semibold text-neutral-800 bg-white flex items-center justify-between cursor-pointer transition-all select-none shadow-xs min-h-[38px]"
           >
-            <option value="">All Months</option>
-            <option value="01">January</option>
-            <option value="02">February</option>
-            <option value="03">March</option>
-            <option value="04">April</option>
-            <option value="05">May</option>
-            <option value="06">June</option>
-            <option value="07">July</option>
-            <option value="08">August</option>
-            <option value="09">September</option>
-            <option value="10">October</option>
-            <option value="11">November</option>
-            <option value="12">December</option>
-          </select>
-        </div>
+            <span>
+              Period: {monthFilter ? getMonthName(monthFilter) : 'All Months'}{' '}
+              {yearFilter ? yearFilter : 'All Years'}
+            </span>
+            <ChevronDown className={`h-3.5 w-3.5 text-neutral-400 transition-transform duration-200 ${isFilterOpen ? 'rotate-180 text-toyota-red' : ''}`} />
+          </button>
 
-        {/* Year Filter */}
-        <div className="relative">
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <Filter className="h-4 w-4 text-neutral-400" />
-          </div>
-          <select
-            value={yearFilter}
-            onChange={(e) => setYearFilter(e.target.value)}
-            className="w-full rounded border border-neutral-200 focus:border-toyota-red py-2 pl-9 pr-3 text-xs outline-none font-semibold text-neutral-600 bg-white cursor-pointer transition-colors"
-          >
-            <option value="">All Years</option>
-            <option value="2026">2026</option>
-            <option value="2025">2025</option>
-          </select>
+          {isFilterOpen && (
+            <div className="absolute right-0 top-full mt-2 w-72 bg-white/95 backdrop-blur-md border border-neutral-100 rounded-lg shadow-xl p-4 animate-in fade-in slide-in-from-top-2 duration-150">
+              {/* Presets Header */}
+              <div className="pb-3 border-b border-neutral-100">
+                <span className="block text-[9px] font-semibold uppercase tracking-wider text-neutral-400 mb-2">Quick Presets</span>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMonthFilter('');
+                      setYearFilter('');
+                      setIsFilterOpen(false);
+                    }}
+                    className="flex-1 py-1 px-2 border border-neutral-200 hover:border-neutral-300 rounded text-[10px] font-bold text-neutral-600 hover:text-neutral-900 bg-white transition-all cursor-pointer text-center active:scale-95"
+                  >
+                    All Periods
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMonthFilter(currentMonth);
+                      setYearFilter(String(currentYear));
+                      setIsFilterOpen(false);
+                    }}
+                    className="flex-1 py-1 px-2 border border-toyota-red/30 hover:border-toyota-red/60 rounded text-[10px] font-bold text-toyota-red hover:bg-red-50/20 bg-white transition-all cursor-pointer text-center active:scale-95"
+                  >
+                    Current Month
+                  </button>
+                </div>
+              </div>
+
+              {/* Year Badges Selection */}
+              <div className="py-3 border-b border-neutral-100">
+                <span className="block text-[9px] font-semibold uppercase tracking-wider text-neutral-400 mb-2">Year Filter</span>
+                <div className="flex gap-1.5 flex-wrap">
+                  {[
+                    { code: '', label: 'All Years' },
+                    { code: '2025', label: '2025' },
+                    { code: '2026', label: '2026' },
+                    { code: '2027', label: '2027' },
+                  ].map((y) => {
+                    const isSelected = yearFilter === y.code;
+                    return (
+                      <button
+                        key={y.code}
+                        type="button"
+                        onClick={() => setYearFilter(y.code)}
+                        className={`px-2.5 py-1 rounded text-[10px] font-semibold transition-all cursor-pointer active:scale-95 ${
+                          isSelected
+                            ? 'bg-neutral-900 text-white font-bold'
+                            : 'bg-neutral-50 hover:bg-neutral-100 text-neutral-600 hover:text-neutral-900'
+                        }`}
+                      >
+                        {y.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Month Selection */}
+              <div className="pt-3">
+                <span className="block text-[9px] font-semibold uppercase tracking-wider text-neutral-400 mb-2">Month Filter</span>
+                
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMonthFilter('');
+                    setIsFilterOpen(false);
+                  }}
+                  className={`w-full py-1 rounded text-[10px] font-bold text-center border transition-all mb-2 cursor-pointer active:scale-95 ${
+                    monthFilter === ''
+                      ? 'bg-toyota-red border-toyota-red text-white shadow-sm shadow-toyota-red/10'
+                      : 'border-neutral-200 hover:bg-neutral-50 text-neutral-600 hover:text-neutral-900 bg-white'
+                  }`}
+                >
+                  All Months
+                </button>
+
+                <div className="grid grid-cols-3 gap-1">
+                  {[
+                    { code: '01', name: 'Jan' },
+                    { code: '02', name: 'Feb' },
+                    { code: '03', name: 'Mar' },
+                    { code: '04', name: 'Apr' },
+                    { code: '05', name: 'May' },
+                    { code: '06', name: 'Jun' },
+                    { code: '07', name: 'Jul' },
+                    { code: '08', name: 'Aug' },
+                    { code: '09', name: 'Sep' },
+                    { code: '10', name: 'Oct' },
+                    { code: '11', name: 'Nov' },
+                    { code: '12', name: 'Dec' },
+                  ].map((m) => {
+                    const isSelected = monthFilter === m.code;
+                    const isCurrent = m.code === currentMonth && (!yearFilter || yearFilter === String(currentYear));
+                    
+                    return (
+                      <button
+                        key={m.code}
+                        type="button"
+                        onClick={() => {
+                          setMonthFilter(m.code);
+                          setIsFilterOpen(false);
+                        }}
+                        className={`relative py-1.5 text-[10px] font-semibold rounded transition-all cursor-pointer text-center select-none active:scale-95 ${
+                          isSelected
+                            ? 'bg-toyota-red text-white shadow-sm shadow-toyota-red/10'
+                            : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900'
+                        }`}
+                      >
+                        {m.name}
+                        {isCurrent && (
+                          <span
+                            className={`absolute bottom-0.5 left-1/2 -translate-x-1/2 h-0.5 w-0.5 rounded-full ${
+                              isSelected ? 'bg-white' : 'bg-toyota-red'
+                            }`}
+                          />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
