@@ -43,8 +43,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     checkSession();
   }, [router]);
 
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
   const handleLogout = async () => {
-    if (!confirm('Are you sure you want to logout?')) return;
     try {
       const res = await fetch('/api/auth/logout', { method: 'POST' });
       if (res.ok) {
@@ -110,7 +111,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </div>
 
               <button
-                onClick={handleLogout}
+                onClick={() => setShowLogoutConfirm(true)}
                 className="flex items-center gap-1.5 bg-toyota-red hover:bg-red-700 text-toyota-white px-3 py-1.5 rounded text-xs font-bold uppercase transition-colors tracking-wider cursor-pointer"
               >
                 <LogOut className="h-4 w-4" />
@@ -209,6 +210,38 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {children}
         </main>
       </div>
+
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs select-none">
+          <div className="bg-white max-w-[280px] w-full p-5 shadow-xl border border-neutral-100 rounded animate-in zoom-in-95 duration-150 flex flex-col gap-4 text-center">
+            <div>
+              <span className="block text-[10px] font-bold uppercase tracking-widest text-neutral-400">Sign Out</span>
+              <p className="text-xs font-semibold text-neutral-800 mt-2">
+                Are you sure you want to log out?
+              </p>
+            </div>
+            <div className="flex gap-2 pt-1 border-t border-neutral-100">
+              <button
+                type="button"
+                onClick={() => setShowLogoutConfirm(false)}
+                className="flex-1 py-2 bg-neutral-50 hover:bg-neutral-100 text-neutral-600 font-bold uppercase text-[9px] tracking-wider rounded cursor-pointer transition-all active:scale-95"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowLogoutConfirm(false);
+                  handleLogout();
+                }}
+                className="flex-1 py-2 bg-toyota-red hover:bg-red-700 text-white font-bold uppercase text-[9px] tracking-wider rounded cursor-pointer transition-all active:scale-95 shadow-sm"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
