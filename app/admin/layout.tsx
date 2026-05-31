@@ -79,7 +79,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="min-h-screen bg-toyota-light-gray flex flex-col">
       {/* HEADER */}
-      <header className="sticky top-0 z-40 bg-toyota-dark-gray text-toyota-white shadow-md">
+      <header className="sticky top-0 z-50 bg-toyota-dark-gray text-toyota-white shadow-md">
         <div className="mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-4">
@@ -125,7 +125,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* DASHBOARD CORE */}
       <div className="flex flex-1 relative">
         {/* SIDEBAR FOR DESKTOP */}
-        <aside className="hidden lg:block w-64 bg-toyota-dark-gray text-toyota-white border-t border-toyota-charcoal/30 flex-shrink-0 shadow-lg">
+        <aside className="hidden lg:block w-64 bg-toyota-dark-gray text-toyota-white border-t border-toyota-charcoal/30 flex-shrink-0 shadow-lg sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto">
           <nav className="p-4 space-y-2">
             {navLinks.map((link) => {
               const Icon = link.icon;
@@ -150,7 +150,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* MOBILE SIDEBAR DRAWSER */}
         {mobileMenuOpen && (
-          <div className="lg:hidden fixed inset-0 z-50 flex">
+          <div className="lg:hidden fixed inset-0 z-60 flex">
             {/* Backdrop */}
             <div
               className="fixed inset-0 bg-black/60 transition-opacity"

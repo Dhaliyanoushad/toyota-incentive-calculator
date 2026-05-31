@@ -205,7 +205,7 @@ export default function AdminSalesPage() {
         </div>
 
         {/* Custom Accounting Period Filter */}
-        <div ref={filterRef} className="relative sm:col-span-2 select-none z-40">
+        <div ref={filterRef} className="relative sm:col-span-2 select-none">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
             <Calendar className="h-4 w-4 text-toyota-red" />
           </div>
@@ -222,7 +222,7 @@ export default function AdminSalesPage() {
           </button>
 
           {isFilterOpen && (
-            <div className="absolute right-0 top-full mt-2 w-72 bg-white/95 backdrop-blur-md border border-neutral-100 rounded-lg shadow-xl p-4 animate-in fade-in slide-in-from-top-2 duration-150">
+            <div className="absolute right-0 top-full mt-2 w-72 bg-white/95 backdrop-blur-md border border-neutral-100 rounded-lg shadow-xl p-4 animate-in fade-in slide-in-from-top-2 duration-150 z-30">
               {/* Presets Header */}
               <div className="pb-3 border-b border-neutral-100">
                 <span className="block text-[9px] font-semibold uppercase tracking-wider text-neutral-400 mb-2">Quick Presets</span>
@@ -408,7 +408,7 @@ export default function AdminSalesPage() {
                               onClick={() => toggleExpand(rec._id)}
                               className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-600 hover:text-toyota-red px-3 py-1.5 rounded bg-neutral-50 hover:bg-neutral-100/70 transition-colors cursor-pointer"
                             >
-                              {isExpanded ? 'Hide' : 'Inspect'}
+                              {isExpanded ? 'Hide' : 'View'}
                               <ChevronDown className={`h-3.5 w-3.5 shrink-0 text-neutral-400 transition-transform ${isExpanded ? 'rotate-180 text-toyota-red' : ''}`} />
                             </button>
                           </td>
@@ -418,7 +418,7 @@ export default function AdminSalesPage() {
                             <td colSpan={6} className="px-8 py-5 border-t border-neutral-100">
                               <div className="space-y-4">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Ledger Details</span>
+                                  <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Details</span>
                                   <span className="h-[1px] flex-1 bg-neutral-100" />
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">

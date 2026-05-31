@@ -402,7 +402,7 @@ export default function AdminSlabsPage() {
                 className="flex items-center justify-center gap-1.5 bg-toyota-red hover:bg-red-700 text-white px-5 py-2.5 rounded text-xs font-semibold uppercase tracking-wider transition-colors shadow-sm cursor-pointer disabled:opacity-50 w-full sm:w-auto shrink-0"
               >
                 <Save className="h-4 w-4" />
-                {saving ? 'Syncing...' : 'Sync Config'}
+                {saving ? 'Applying...' : 'Apply Changes'}
               </button>
             </div>
 
