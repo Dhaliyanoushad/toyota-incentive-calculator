@@ -42,6 +42,13 @@ export default function OfficerDashboardPage() {
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const pickerRef = useRef<HTMLDivElement>(null);
 
+  // Auto-select current month/year on mount to avoid hydration mismatch
+  useEffect(() => {
+    const now = new Date();
+    setSelectedMonth(String(now.getMonth() + 1).padStart(2, '0'));
+    setSelectedYear(now.getFullYear());
+  }, []);
+
   // Click outside to close custom period picker
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -546,16 +553,38 @@ export default function OfficerDashboardPage() {
                         <span className="block text-[11px] text-neutral-400">{car.baseSuffix} · {car.variant}</span>
                       </div>
                       {isEditable ? (
-                        <div className="relative flex items-center">
-                          <input
-                            type="number"
-                            min="0"
-                            value={val || ''}
-                            onChange={(e) => handleQtyChange(car._id, e.target.value)}
-                            className="w-24 bg-white border border-neutral-200 focus:border-toyota-red rounded px-3 py-1.5 text-right font-semibold text-sm text-neutral-800 outline-none transition-all"
-                            placeholder="0"
-                          />
-                          <span className="text-[10px] font-medium text-neutral-400 ml-2 uppercase">units</span>
+                        <div className="flex items-center gap-2.5">
+                          <div className="flex items-center border border-neutral-200 focus-within:border-toyota-red rounded overflow-hidden bg-white shadow-xs transition-all focus-within:ring-1 focus-within:ring-toyota-red/10 h-8.5">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                handleQtyChange(car._id, String(Math.max(0, val - 1)));
+                                e.currentTarget.blur();
+                              }}
+                              className="w-8 h-full bg-neutral-50/50 hover:bg-neutral-100/80 text-neutral-500 hover:text-neutral-800 border-r border-neutral-200 transition-colors flex items-center justify-center font-semibold text-sm select-none focus:outline-none cursor-pointer active:bg-neutral-200/50 active:scale-95"
+                            >
+                              –
+                            </button>
+                            <input
+                              type="number"
+                              min="0"
+                              value={val}
+                              onChange={(e) => handleQtyChange(car._id, e.target.value)}
+                              className="w-12 h-full text-center font-bold text-sm text-neutral-800 outline-none border-none py-1 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                              placeholder="0"
+                            />
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                handleQtyChange(car._id, String(val + 1));
+                                e.currentTarget.blur();
+                              }}
+                              className="w-8 h-full bg-neutral-50/50 hover:bg-neutral-100/80 text-neutral-500 hover:text-neutral-800 border-l border-neutral-200 transition-colors flex items-center justify-center font-semibold text-sm select-none focus:outline-none cursor-pointer active:bg-neutral-200/50 active:scale-95"
+                            >
+                              +
+                            </button>
+                          </div>
+                          <span className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider select-none">units</span>
                         </div>
                       ) : (
                         <div className="flex items-center gap-1.5 bg-neutral-50 px-3 py-1.5 rounded border border-neutral-100">
